@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
 import { generate } from 'random-words';
-import Confetti from 'react-confetti';
 import LibWordie from '../assets/LibWordie.png';
 
 const MAX_GUESSES = 6;
 const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
-const STREAK_STORAGE_KEY = 'libwordie-streak-v1';
+const GAME_STATS_STORAGE_KEY = 'libwordie-stats-v1';
+
+type GameStats = {
+  streak: number;
+  wins: number;
+  losses: number;
+  longestStreak: number;
+};
+
+const defaultStats: GameStats = {
+  streak: 0,
+  wins: 0,
+  losses: 0,
+  longestStreak: 0,
+};
 
 const GamePage = () => {
   const [word, setWord] = useState<string>('');
@@ -15,8 +28,7 @@ const GamePage = () => {
     'loading'
   );
   const [showHowToPlayModal, setShowHowToPlayModal] = useState<boolean>(false);
-  const [streak, setStreak] = useState<number>(0);
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [stats, setStats] = useState<GameStats>(defaultStats);
 
   const generateNewWord = () => {
     return generate({
@@ -29,6 +41,11 @@ const GamePage = () => {
       .toLowerCase();
   };
 
+  const saveStats = (updatedStats: GameStats) => {
+    setStats(updatedStats);
+    localStorage.setItem(GAME_STATS_STORAGE_KEY, JSON.stringify(updatedStats));
+  };
+
   useEffect(() => {
     const generatedWord = generateNewWord();
     setWord(generatedWord);
@@ -39,27 +56,17 @@ const GamePage = () => {
       setShowHowToPlayModal(true);
     }
 
-    const storedStreak = localStorage.getItem(STREAK_STORAGE_KEY);
-    if (storedStreak) {
-      setStreak(Number(storedStreak));
+    const savedStats = localStorage.getItem(GAME_STATS_STORAGE_KEY);
+    if (savedStats) {
+      try {
+        setStats(JSON.parse(savedStats));
+      } catch {
+        setStats(defaultStats);
+      }
     }
   }, []);
-  
+
   console.log('word:', word);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleCloseHowToPlayModal = () => {
     setShowHowToPlayModal(false);
@@ -68,14 +75,6 @@ const GamePage = () => {
 
   const handleOpenHowToPlayModal = () => {
     setShowHowToPlayModal(true);
-  };
-
-  const handleNewGame = () => {
-    const newWord = generateNewWord();
-    setWord(newWord);
-    setGuesses([]);
-    setCurrentGuess('');
-    setStatus('playing');
   };
 
   const handleSubmit = () => {
@@ -90,15 +89,34 @@ const GamePage = () => {
     setCurrentGuess('');
 
     if (guess === word) {
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      localStorage.setItem(STREAK_STORAGE_KEY, String(newStreak));
+      const updatedStats: GameStats = {
+        ...stats,
+        streak: stats.streak + 1,
+        wins: stats.wins + 1,
+        longestStreak: Math.max(stats.longestStreak, stats.streak + 1),
+      };
+
+      saveStats(updatedStats);
       setStatus('win');
     } else if (newGuesses.length === MAX_GUESSES) {
-      setStreak(0);
-      localStorage.setItem(STREAK_STORAGE_KEY, '0');
+      const updatedStats: GameStats = {
+        ...stats,
+        streak: 0,
+        losses: stats.losses + 1,
+      };
+
+      saveStats(updatedStats);
       setStatus('loss');
     }
+  };
+
+  const handleNewGame = () => {
+    const newWord = generateNewWord();
+
+    setWord(newWord);
+    setGuesses([]);
+    setCurrentGuess('');
+    setStatus('playing');
   };
 
   const getColor = (letter: string, index: number) => {
@@ -130,15 +148,6 @@ const GamePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#6b3f1d] via-[#8a4f1d] to-[#4d2a12] px-4 py-8 text-[#fff3d4] sm:py-10">
-      {status === 'win' && windowSize.width > 0 && windowSize.height > 0 && (
-        <Confetti
-          width={windowSize.width}
-          height={windowSize.height}
-          recycle={false}
-          numberOfPieces={250}
-        />
-      )}
-
       {showHowToPlayModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="relative w-full max-w-2xl rounded-[2rem] border-2 border-[#d3a62f]/70 bg-[#8b5a2b] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-8">
@@ -226,35 +235,25 @@ const GamePage = () => {
         <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
           <div className="rounded-[2.5rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-8">
             <div className="mb-4 flex flex-col gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74] sm:text-sm">
+                Vintage Puzzle Game
+              </p>
+
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74] sm:text-sm">
-                    Vintage Puzzle Game
-                  </p>
-                  <p className="mt-2 max-w-xl text-base leading-6 text-[#f7e6bf] sm:text-lg">
+                <div className="flex-1">
+                  <p className="max-w-xl text-base leading-6 text-[#f7e6bf] sm:text-lg">
                     Guess the hidden word in six tries. Every round gives you a new
                     word between 4 and 8 letters.
                   </p>
                 </div>
 
-                <div className="flex gap-3">
-                  <div className="self-start rounded-[1.5rem] border-2 border-[#d3a62f] bg-[#6b3f1d]/70 px-5 py-4 text-center shadow-lg">
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
-                      Word Length
-                    </p>
-                    <p className="mt-1 text-3xl font-black text-[#fff8e7]">
-                      {word.length}
-                    </p>
-                  </div>
-
-                  <div className="self-start rounded-[1.5rem] border-2 border-[#d3a62f] bg-[#6b3f1d]/70 px-5 py-4 text-center shadow-lg">
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
-                      Streak
-                    </p>
-                    <p className="mt-1 text-3xl font-black text-[#fff8e7]">
-                      {streak}
-                    </p>
-                  </div>
+                <div className="self-start rounded-[1.5rem] border-2 border-[#d3a62f] bg-[#6b3f1d]/70 px-5 py-4 text-center shadow-lg sm:self-auto">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Word Length
+                  </p>
+                  <p className="mt-1 text-3xl font-black text-[#fff8e7]">
+                    {word.length}
+                  </p>
                 </div>
               </div>
 
@@ -332,9 +331,6 @@ const GamePage = () => {
                     Beautiful work. You guessed{' '}
                     <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
                   </p>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#e7f2c8]">
-                    Current streak: {streak}
-                  </p>
 
                   <button
                     onClick={handleNewGame}
@@ -351,9 +347,6 @@ const GamePage = () => {
                   <p className="mt-2 text-base text-[#fff3d4]">
                     The word was{' '}
                     <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
-                  </p>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffd8cc]">
-                    Streak reset to 0
                   </p>
 
                   <button
@@ -374,6 +367,62 @@ const GamePage = () => {
                 alt="Vintage Lib Wordie artwork"
                 className="h-full w-full object-cover"
               />
+            </div>
+
+            <div className="rounded-[2rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
+              <h2
+                className="text-2xl font-black text-[#fff8e7]"
+                style={{ fontFamily: 'Playfair Display, serif' }}
+              >
+                Your Stats
+              </h2>
+
+              <div className="mt-5 grid grid-cols-2 gap-4">
+                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Current Streak
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                    {stats.streak}
+                  </p>
+                </div>
+
+                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Longest Streak
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                    {stats.longestStreak}
+                  </p>
+                </div>
+
+                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Wins
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                    {stats.wins}
+                  </p>
+                </div>
+
+                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Losses
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                    {stats.losses}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-[1.5rem] border-2 border-[#d9b15f]/40 bg-[#6b3f1d]/50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74]">
+                  Keep Going
+                </p>
+                <p className="mt-2 leading-7 text-[#f7e6bf]">
+                  Build your streak, beat your best run, and keep stacking wins.
+                </p>
+              </div>
             </div>
           </div>
         </div>
