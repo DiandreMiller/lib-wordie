@@ -1,8 +1,10 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 
 import HomePage from './Pages/HomePage';
 import GamePage from './Pages/GamePage';
 import './App.css'
+import FOUROFOUR from "./Pages/FOUROFOUR";
 
 function App() {
   return (
@@ -11,6 +13,7 @@ function App() {
         <Routes>
           <Route element={<HomePage />} path='/' />
           <Route element={<GamePage />} path='/play' />
+          <Route element={<FOUROFOUR />} path='*' />
         </Routes>
       </BrowserRouter>
     </div>
