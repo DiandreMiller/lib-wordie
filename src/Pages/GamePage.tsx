@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { generate } from 'random-words';
+import LibWordie from '../assets/LibWordie.png';
 
 const MAX_GUESSES = 6;
+const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
 
 const GamePage = () => {
   const [word, setWord] = useState<string>('');
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState<string>('');
-  const [status, setStatus] = useState<'loading' | 'playing' | 'win' | 'loss'>('loading');
+  const [status, setStatus] = useState<'loading' | 'playing' | 'win' | 'loss'>(
+    'loading'
+  );
+  const [showHowToPlayModal, setShowHowToPlayModal] = useState<boolean>(false);
 
   useEffect(() => {
     const generatedWord = generate({
@@ -19,10 +24,24 @@ const GamePage = () => {
       .trim()
       .toLowerCase();
 
-    console.log('generated word:', generatedWord);
     setWord(generatedWord);
     setStatus('playing');
+
+    const hasDismissedModal = localStorage.getItem(HOW_TO_PLAY_STORAGE_KEY);
+
+    if (!hasDismissedModal) {
+      setShowHowToPlayModal(true);
+    }
   }, []);
+
+  const handleCloseHowToPlayModal = () => {
+    setShowHowToPlayModal(false);
+    localStorage.setItem(HOW_TO_PLAY_STORAGE_KEY, 'true');
+  };
+
+  const handleOpenHowToPlayModal = () => {
+    setShowHowToPlayModal(true);
+  };
 
   const handleSubmit = () => {
     if (status !== 'playing') return;
@@ -44,21 +63,24 @@ const GamePage = () => {
 
   const getColor = (letter: string, index: number) => {
     if (word[index] === letter) {
-      return 'bg-emerald-500 border-emerald-400 text-white shadow-emerald-500/30';
+      return 'bg-[#6f8f45] border-[#89a95c] text-[#fff8e7]';
     }
 
     if (word.includes(letter)) {
-      return 'bg-amber-400 border-amber-300 text-slate-900 shadow-amber-400/30';
+      return 'bg-[#d3a62f] border-[#e4bb4c] text-[#2f1d0e]';
     }
 
-    return 'bg-rose-500 border-rose-400 text-white shadow-rose-500/30';
+    return 'bg-[#7a3b2e] border-[#9a5341] text-[#fff8e7]';
   };
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center px-4">
-        <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl px-8 py-6 shadow-2xl">
-          <p className="text-lg font-semibold tracking-wide text-white animate-pulse">
+      <div className="flex min-h-screen items-center justify-center bg-[#6b3f1d] px-4">
+        <div className="rounded-[2rem] border-2 border-[#d3a62f] bg-[#8b5a2b] px-8 py-6 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
+          <p
+            className="text-2xl font-bold tracking-wide text-[#fff3d4]"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
             Loading Lib Wordie...
           </p>
         </div>
@@ -67,52 +89,136 @@ const GamePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white px-4 py-10">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8 rounded-[2rem] border border-white/10 bg-white/5 px-6 py-6 shadow-2xl backdrop-blur-xl">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
-                Word Puzzle
-              </p>
-              <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-5xl">
-                Lib Wordie
-              </h1>
-              <p className="mt-3 max-w-xl text-sm text-slate-300 sm:text-base">
-                Guess the hidden word in six tries. Every round gives you a new word between{' '}
-                <span className="font-semibold text-cyan-300">4 and 8 letters</span>.
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-[#6b3f1d] via-[#8a4f1d] to-[#4d2a12] px-4 py-8 text-[#fff3d4] sm:py-10">
+      {showHowToPlayModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="relative w-full max-w-2xl rounded-[2rem] border-2 border-[#d3a62f]/70 bg-[#8b5a2b] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-8">
+            <button
+              onClick={handleCloseHowToPlayModal}
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-[#d3a62f] bg-[#6b3f1d] text-xl font-bold text-[#fff8e7] transition hover:scale-105 hover:bg-[#7b471f]"
+              aria-label="Close how to play modal"
+            >
+              ×
+            </button>
+
+            <h2
+              className="text-3xl font-black text-[#fff8e7]"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              How to play
+            </h2>
+
+            <p className="mt-3 text-base leading-7 text-[#f7e6bf]">
+              Guess the hidden word in six tries. Each guess must match the length of
+              the word shown for that round.
+            </p>
+
+            <div className="mt-6 space-y-4 text-[#f7e6bf]">
+              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-[#89a95c] bg-[#6f8f45]" />
+                <p>
+                  <span className="font-bold text-[#fff8e7]">Green</span> means the
+                  letter is correct and in the right place.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-[#e4bb4c] bg-[#d3a62f]" />
+                <p>
+                  <span className="font-bold text-[#fff8e7]">Yellow</span> means the
+                  letter is in the word, but in the wrong place.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-[#b46251] bg-[#7a3b2e]" />
+                <p>
+                  <span className="font-bold text-[#fff8e7]">Red</span> means the
+                  letter is not in the word.
+                </p>
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 shadow-lg">
-              <p className="font-semibold">Word Length</p>
-              <p className="text-xl font-black tracking-wide">{word.length}</p>
+            <div className="mt-6 rounded-[1.5rem] border-2 border-[#d9b15f]/40 bg-[#6b3f1d]/50 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74]">
+                Tip
+              </p>
+              <p className="mt-2 leading-7 text-[#f7e6bf]">
+                Start with common vowels and consonants, then use the color clues to
+                narrow the word down.
+              </p>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_280px]">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex items-center justify-center gap-3 sm:mb-8">
+          <h1
+            className="text-6xl font-black tracking-tight text-[#fff8e7] sm:text-7xl"
+            style={{
+              fontFamily: 'Playfair Display, serif',
+              textShadow: '3px 3px 0px #4d2a12, 6px 6px 0px rgba(0,0,0,0.25)',
+            }}
+          >
+            Lib Wordie
+          </h1>
+
+          <button
+            onClick={handleOpenHowToPlayModal}
+            className="mt-2 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#d3a62f] bg-[#8b5a2b]/90 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#9a6330]"
+            aria-label="Open how to play modal"
+            title="How to play"
+          >
+            ?
+          </button>
+        </div>
+
+        <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+          <div className="rounded-[2.5rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-8">
+            <div className="mb-4 flex flex-col gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74] sm:text-sm">
+                Vintage Puzzle Game
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1">
+                  <p className="max-w-xl text-base leading-6 text-[#f7e6bf] sm:text-lg">
+                    Guess the hidden word in six tries. Every round gives you a new
+                    word between 4 and 8 letters.
+                  </p>
+                </div>
+
+                <div className="self-start rounded-[1.5rem] border-2 border-[#d3a62f] bg-[#6b3f1d]/70 px-5 py-4 text-center shadow-lg sm:self-auto">
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                    Word Length
+                  </p>
+                  <p className="mt-1 text-3xl font-black text-[#fff8e7]">
+                    {word.length}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 border-b border-[#d9b15f]/30" />
+            </div>
+
             <div className="flex flex-col items-center">
-              <div className="space-y-3">
+              <div className="space-y-3 pt-2">
                 {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
                   const guess = guesses[rowIndex] || '';
 
                   return (
-                    <div
-                      key={rowIndex}
-                      className="flex justify-center gap-2"
-                    >
+                    <div key={rowIndex} className="flex justify-center gap-2 sm:gap-3">
                       {Array.from({ length: word.length }).map((_, colIndex) => {
                         const letter = guess[colIndex] || '';
                         const color = guess
                           ? getColor(letter, colIndex)
-                          : 'bg-white/5 border-white/10 text-white';
+                          : 'bg-[#a56a35]/50 border-[#d8b56a]/35 text-[#fff3d4]';
 
                         return (
                           <div
                             key={colIndex}
-                            className={`flex h-14 w-14 items-center justify-center rounded-2xl border text-xl font-black uppercase shadow-lg transition-all duration-200 sm:h-16 sm:w-16 sm:text-2xl ${color}`}
+                            className={`flex h-14 w-14 items-center justify-center rounded-[1rem] border-2 text-xl font-black uppercase shadow-md transition-all duration-200 sm:h-16 sm:w-16 sm:text-2xl ${color}`}
                           >
                             {letter}
                           </div>
@@ -124,10 +230,10 @@ const GamePage = () => {
               </div>
 
               {status === 'playing' && (
-                <div className="mt-8 w-full max-w-md">
+                <div className="mt-8 w-full max-w-xl">
                   <label
                     htmlFor="guess"
-                    className="mb-2 block text-sm font-medium text-slate-300"
+                    className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-[#f3cf74]"
                   >
                     Enter your guess
                   </label>
@@ -142,12 +248,13 @@ const GamePage = () => {
                         )
                       }
                       maxLength={word.length}
-                      className="h-14 flex-1 rounded-2xl border border-white/10 bg-white/10 px-4 text-lg text-white outline-none backdrop-blur-md transition focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/30"
+                      className="h-14 flex-1 rounded-[1.25rem] border-2 border-[#d9b15f] bg-[#fff3d4] px-5 text-lg font-semibold text-[#4d2a12] outline-none transition placeholder:text-[#8b5a2b]/70 focus:border-[#f3cf74] focus:ring-4 focus:ring-[#f3cf74]/20"
                       placeholder={`Enter ${word.length}-letter word`}
                     />
+
                     <button
                       onClick={handleSubmit}
-                      className="h-14 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 font-bold text-slate-950 shadow-xl transition hover:scale-[1.02] hover:shadow-cyan-500/30 active:scale-[0.98]"
+                      className="h-14 rounded-[1.25rem] border-2 border-[#f3cf74] bg-[#d3a62f] px-8 text-lg font-black text-[#3a210f] shadow-lg transition hover:scale-[1.02] hover:bg-[#e0b43a] active:scale-[0.98]"
                     >
                       Guess
                     </button>
@@ -156,64 +263,34 @@ const GamePage = () => {
               )}
 
               {status === 'win' && (
-                <div className="mt-8 w-full max-w-md rounded-3xl border border-emerald-400/20 bg-emerald-400/10 px-6 py-5 text-center shadow-xl">
-                  <p className="text-2xl font-black text-emerald-300">You won 🎉</p>
-                  <p className="mt-2 text-slate-200">
+                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#89a95c] bg-[#6f8f45]/20 px-6 py-5 text-center shadow-lg">
+                  <p className="text-3xl font-black text-[#e7f2c8]">You won!</p>
+                  <p className="mt-2 text-base text-[#fff3d4]">
                     Beautiful work. You guessed{' '}
-                    <span className="font-bold uppercase text-white">{word}</span>.
+                    <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
                   </p>
                 </div>
               )}
 
               {status === 'loss' && (
-                <div className="mt-8 w-full max-w-md rounded-3xl border border-rose-400/20 bg-rose-400/10 px-6 py-5 text-center shadow-xl">
-                  <p className="text-2xl font-black text-rose-300">You lost</p>
-                  <p className="mt-2 text-slate-200">
+                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#b46251] bg-[#7a3b2e]/30 px-6 py-5 text-center shadow-lg">
+                  <p className="text-3xl font-black text-[#ffd8cc]">You lost</p>
+                  <p className="mt-2 text-base text-[#fff3d4]">
                     The word was{' '}
-                    <strong className="uppercase tracking-wide text-white">{word}</strong>.
+                    <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
-            <h2 className="text-xl font-bold text-white">How it works</h2>
-
-            <div className="mt-5 space-y-4 text-sm text-slate-300">
-              <div className="flex items-start gap-3 rounded-2xl bg-white/5 p-3">
-                <div className="mt-1 h-4 w-4 rounded-full bg-emerald-400" />
-                <p>
-                  <span className="font-semibold text-white">Green</span> means the
-                  letter is correct and in the right spot.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-2xl bg-white/5 p-3">
-                <div className="mt-1 h-4 w-4 rounded-full bg-amber-400" />
-                <p>
-                  <span className="font-semibold text-white">Yellow</span> means the
-                  letter is in the word, but in the wrong spot.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-2xl bg-white/5 p-3">
-                <div className="mt-1 h-4 w-4 rounded-full bg-rose-400" />
-                <p>
-                  <span className="font-semibold text-white">Red</span> means the
-                  letter is not in the word.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/40 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                Tip
-              </p>
-              <p className="mt-2 text-sm text-slate-200">
-                Try common vowels early, then use the tile colors to narrow the word
-                down fast.
-              </p>
+          <div className="flex flex-col gap-6">
+            <div className="overflow-hidden rounded-[2.5rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+              <img
+                src={LibWordie}
+                alt="Vintage Lib Wordie artwork"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
         </div>
