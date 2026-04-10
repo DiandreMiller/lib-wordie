@@ -34,8 +34,8 @@ const FOUROFOUR = () => {
             </h2>
 
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#f7e6bf]">
-              The page you were looking for is not here. Maybe the link is broken,
-              maybe the route changed, or maybe this page just lost the guessing game.
+                This page isn’t quite where you expected it to be. The link may be off,
+                the route may have changed… or this page just used all six guesses and missed.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -47,7 +47,7 @@ const FOUROFOUR = () => {
               </Link>
 
               <Link
-                to="/game"
+                to="/play"
                 className="inline-flex items-center justify-center rounded-[1.25rem] border-2 border-[#d9b15f]/50 bg-[#8b5a2b]/50 px-8 py-4 text-lg font-bold text-[#fff3d4] shadow-lg backdrop-blur-sm transition hover:scale-[1.03] hover:bg-[#8b5a2b]/70 active:scale-[0.98]"
               >
                 Go to Game
