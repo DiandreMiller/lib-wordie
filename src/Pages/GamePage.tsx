@@ -34,6 +34,8 @@ const GamePage = () => {
     }
   }, []);
 
+  console.log(word);
+
   const handleCloseHowToPlayModal = () => {
     setShowHowToPlayModal(false);
     localStorage.setItem(HOW_TO_PLAY_STORAGE_KEY, 'true');
@@ -59,6 +61,22 @@ const GamePage = () => {
     } else if (newGuesses.length === MAX_GUESSES) {
       setStatus('loss');
     }
+  };
+
+  const handleNewGame = () => {
+    const newWord = generate({
+      exactly: 1,
+      minLength: 4,
+      maxLength: 8,
+    })[0]
+      .toString()
+      .trim()
+      .toLowerCase();
+  
+    setWord(newWord);
+    setGuesses([]);
+    setCurrentGuess('');
+    setStatus('playing');
   };
 
   const getColor = (letter: string, index: number) => {
@@ -267,24 +285,38 @@ const GamePage = () => {
               )}
 
               {status === 'win' && (
-                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#89a95c] bg-[#6f8f45]/20 px-6 py-5 text-center shadow-lg">
-                  <p className="text-3xl font-black text-[#e7f2c8]">You won!</p>
-                  <p className="mt-2 text-base text-[#fff3d4]">
-                    Beautiful work. You guessed{' '}
-                    <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
-                  </p>
-                </div>
+            <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#89a95c] bg-[#6f8f45]/20 px-6 py-5 text-center shadow-lg">
+                <p className="text-3xl font-black text-[#e7f2c8]">You won!</p>
+                <p className="mt-2 text-base text-[#fff3d4]">
+                Beautiful work. You guessed{' '}
+                <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
+                </p>
+
+                <button
+                onClick={handleNewGame}
+                className="mt-5 h-12 rounded-[1.25rem] border-2 border-[#89a95c] bg-[#6f8f45] px-6 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#7fa255]"
+                >
+                Play Again
+                </button>
+            </div>
               )}
 
-              {status === 'loss' && (
+               {status === 'loss' && (
                 <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#b46251] bg-[#7a3b2e]/30 px-6 py-5 text-center shadow-lg">
-                  <p className="text-3xl font-black text-[#ffd8cc]">You lost</p>
-                  <p className="mt-2 text-base text-[#fff3d4]">
+                    <p className="text-3xl font-black text-[#ffd8cc]">You lost</p>
+                    <p className="mt-2 text-base text-[#fff3d4]">
                     The word was{' '}
                     <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
-                  </p>
+                    </p>
+
+                    <button
+                    onClick={handleNewGame}
+                    className="mt-5 h-12 rounded-[1.25rem] border-2 border-[#b46251] bg-[#7a3b2e] px-6 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#8c4a3b]"
+                    >
+                    Try Another Word
+                    </button>
                 </div>
-              )}
+               )}
             </div>
           </div>
 
