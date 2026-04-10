@@ -239,19 +239,23 @@ const GamePage = () => {
                   </label>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <input
-                      id="guess"
-                      value={currentGuess}
-                      onChange={(e) =>
-                        setCurrentGuess(
-                          e.target.value.toLowerCase().slice(0, word.length)
-                        )
-                      }
-                      maxLength={word.length}
-                      className="h-14 flex-1 rounded-[1.25rem] border-2 border-[#d9b15f] bg-[#fff3d4] px-5 text-lg font-semibold text-[#4d2a12] outline-none transition placeholder:text-[#8b5a2b]/70 focus:border-[#f3cf74] focus:ring-4 focus:ring-[#f3cf74]/20"
-                      placeholder={`Enter ${word.length}-letter word`}
-                    />
-
+                  <input
+                        id="guess"
+                        value={currentGuess}
+                        onChange={(e) =>
+                            setCurrentGuess(
+                            e.target.value.toLowerCase().slice(0, word.length)
+                            )
+                        }
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                            handleSubmit();
+                            }
+                        }}
+                        maxLength={word.length}
+                        className="h-14 flex-1 rounded-[1.25rem] border-2 border-[#d9b15f] bg-[#fff3d4] px-5 text-lg font-semibold text-[#4d2a12] outline-none transition placeholder:text-[#8b5a2b]/70 focus:border-[#f3cf74] focus:ring-4 focus:ring-[#f3cf74]/20"
+                        placeholder={`Enter ${word.length}-letter word`}
+                   />
                     <button
                       onClick={handleSubmit}
                       className="h-14 rounded-[1.25rem] border-2 border-[#f3cf74] bg-[#d3a62f] px-8 text-lg font-black text-[#3a210f] shadow-lg transition hover:scale-[1.02] hover:bg-[#e0b43a] active:scale-[0.98]"
