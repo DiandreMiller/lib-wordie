@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { generate } from 'random-words';
-import LibWordie from '../assets/LibWordie.png';
+import LibWordie from '../assets/images/LibChemCartoon.png';
+import  { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
 
 const MAX_GUESSES = 6;
 const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
@@ -31,14 +31,8 @@ const GamePage = () => {
   const [stats, setStats] = useState<GameStats>(defaultStats);
 
   const generateNewWord = () => {
-    return generate({
-      exactly: 1,
-      minLength: 4,
-      maxLength: 8,
-    })[0]
-      .toString()
-      .trim()
-      .toLowerCase();
+    const randomIndex = Math.floor(Math.random() * PERIODIC_TABLE_ELEMENTS.length);
+    return PERIODIC_TABLE_ELEMENTS[randomIndex].trim().toLowerCase();
   };
 
   const saveStats = (updatedStats: GameStats) => {
@@ -65,8 +59,6 @@ const GamePage = () => {
       }
     }
   }, []);
-
-  console.log('word:', word);
 
   const handleCloseHowToPlayModal = () => {
     setShowHowToPlayModal(false);
@@ -112,7 +104,6 @@ const GamePage = () => {
 
   const handleNewGame = () => {
     const newWord = generateNewWord();
-
     setWord(newWord);
     setGuesses([]);
     setCurrentGuess('');
@@ -121,110 +112,116 @@ const GamePage = () => {
 
   const getColor = (letter: string, index: number) => {
     if (word[index] === letter) {
-      return 'bg-[#6f8f45] border-[#89a95c] text-[#fff8e7]';
+      return 'bg-emerald-500 border-emerald-300 text-white';
     }
 
     if (word.includes(letter)) {
-      return 'bg-[#d3a62f] border-[#e4bb4c] text-[#2f1d0e]';
+      return 'bg-yellow-300 border-yellow-200 text-slate-950';
     }
 
-    return 'bg-[#7a3b2e] border-[#9a5341] text-[#fff8e7]';
+    return 'bg-red-500 border-red-300 text-white';
+  };
+
+  const getTileClasses = () => {
+    if (word.length >= 11) {
+      return 'h-9 w-9 text-sm rounded-[0.7rem] sm:h-11 sm:w-11 sm:text-base lg:h-12 lg:w-12 lg:text-lg';
+    }
+
+    if (word.length >= 9) {
+      return 'h-10 w-10 text-base rounded-[0.75rem] sm:h-12 sm:w-12 sm:text-lg lg:h-14 lg:w-14 lg:text-xl';
+    }
+
+    return 'h-12 w-12 text-lg rounded-[0.9rem] sm:h-14 sm:w-14 sm:text-xl lg:h-16 lg:w-16 lg:text-2xl';
   };
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#6b3f1d] px-4">
-        <div className="rounded-[2rem] border-2 border-[#d3a62f] bg-[#8b5a2b] px-8 py-6 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
-          <p
-            className="text-2xl font-bold tracking-wide text-[#fff3d4]"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Loading Lib Wordie...
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4">
+        <div className="rounded-[2rem] border border-cyan-300/30 bg-white/10 px-8 py-6 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
+          <p className="text-2xl font-bold tracking-wide text-white">
+            Loading Chem Lab...
           </p>
         </div>
       </div>
     );
   }
 
+  const tileClasses = getTileClasses();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#6b3f1d] via-[#8a4f1d] to-[#4d2a12] px-4 py-8 text-[#fff3d4] sm:py-10">
+    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-6rem] top-12 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="absolute right-[-4rem] top-0 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl" />
+        <div className="absolute bottom-[-4rem] left-1/3 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
+      </div>
+
       {showHowToPlayModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="relative w-full max-w-2xl rounded-[2rem] border-2 border-[#d3a62f]/70 bg-[#8b5a2b] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="relative w-full max-w-2xl rounded-[2rem] border border-white/15 bg-slate-900/90 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-md sm:p-8">
             <button
               onClick={handleCloseHowToPlayModal}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-[#d3a62f] bg-[#6b3f1d] text-xl font-bold text-[#fff8e7] transition hover:scale-105 hover:bg-[#7b471f]"
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/40 bg-white/10 text-xl font-bold text-white transition hover:scale-105 hover:bg-white/20"
               aria-label="Close how to play modal"
             >
               ×
             </button>
 
-            <h2
-              className="text-3xl font-black text-[#fff8e7]"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              How to play
-            </h2>
+            <h2 className="text-3xl font-black text-white">How to Play</h2>
 
-            <p className="mt-3 text-base leading-7 text-[#f7e6bf]">
-              Guess the hidden word in six tries. Each guess must match the length of
-              the word shown for that round.
+            <p className="mt-3 text-base leading-7 text-slate-200">
+              Guess the hidden chemistry term in six tries. Each guess must match the
+              exact letter count for that round.
             </p>
 
-            <div className="mt-6 space-y-4 text-[#f7e6bf]">
-              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
-                <div className="mt-1 h-5 w-5 rounded-full border border-[#89a95c] bg-[#6f8f45]" />
+            <div className="mt-6 space-y-4 text-slate-200">
+              <div className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-emerald-300 bg-emerald-500" />
                 <p>
-                  <span className="font-bold text-[#fff8e7]">Green</span> means the
-                  letter is correct and in the right place.
+                  <span className="font-bold text-white">Green</span> means the letter
+                  is correct and in the right place.
                 </p>
               </div>
 
-              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
-                <div className="mt-1 h-5 w-5 rounded-full border border-[#e4bb4c] bg-[#d3a62f]" />
+              <div className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-yellow-200 bg-yellow-300" />
                 <p>
-                  <span className="font-bold text-[#fff8e7]">Yellow</span> means the
-                  letter is in the word, but in the wrong place.
+                  <span className="font-bold text-white">Yellow</span> means the letter
+                  is in the term, but in the wrong place.
                 </p>
               </div>
 
-              <div className="flex items-start gap-3 rounded-[1.25rem] bg-[#6b3f1d]/40 p-4">
-                <div className="mt-1 h-5 w-5 rounded-full border border-[#b46251] bg-[#7a3b2e]" />
+              <div className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                <div className="mt-1 h-5 w-5 rounded-full border border-red-300 bg-red-500" />
                 <p>
-                  <span className="font-bold text-[#fff8e7]">Red</span> means the
-                  letter is not in the word.
+                  <span className="font-bold text-white">Red</span> means there is no
+                  reaction — that letter is not in the term.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 rounded-[1.5rem] border-2 border-[#d9b15f]/40 bg-[#6b3f1d]/50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74]">
-                Tip
+            <div className="mt-6 rounded-[1.5rem] border border-cyan-300/20 bg-cyan-400/10 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200">
+                Lab Tip
               </p>
-              <p className="mt-2 leading-7 text-[#f7e6bf]">
-                Start with common vowels and consonants, then use the color clues to
-                narrow the word down.
+              <p className="mt-2 leading-7 text-slate-200">
+                Element names can range from 3 to 13 letters, so pay close attention
+                to the term length before guessing.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="mx-auto max-w-6xl">
+      <div className="relative mx-auto max-w-6xl">
         <div className="mb-6 flex items-center justify-center gap-3 sm:mb-8">
-          <h1
-            className="text-6xl font-black tracking-tight text-[#fff8e7] sm:text-7xl"
-            style={{
-              fontFamily: 'Playfair Display, serif',
-              textShadow: '3px 3px 0px #4d2a12, 6px 6px 0px rgba(0,0,0,0.25)',
-            }}
-          >
-            Lib Wordie
+          <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
+            Chem Lab
           </h1>
 
           <button
             onClick={handleOpenHowToPlayModal}
-            className="mt-2 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#d3a62f] bg-[#8b5a2b]/90 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#9a6330]"
+            className="mt-1 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/40 bg-white/10 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-white/20"
             aria-label="Open how to play modal"
             title="How to play"
           >
@@ -233,65 +230,65 @@ const GamePage = () => {
         </div>
 
         <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
-          <div className="rounded-[2.5rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-8">
+          <div className="rounded-[2.5rem] border border-white/15 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-8">
             <div className="mb-4 flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74] sm:text-sm">
-                Vintage Puzzle Game
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200 sm:text-sm">
+                Chemistry Study Mode
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1">
-                  <p className="max-w-xl text-base leading-6 text-[#f7e6bf] sm:text-lg">
-                    Guess the hidden word in six tries. Every round gives you a new
-                    word between 4 and 8 letters.
+                  <p className="max-w-xl text-base leading-6 text-slate-200 sm:text-lg">
+                    Guess the hidden element name in six tries. Every round gives you
+                    a periodic table element between 3 and 13 letters.
                   </p>
                 </div>
 
-                <div className="self-start rounded-[1.5rem] border-2 border-[#d3a62f] bg-[#6b3f1d]/70 px-5 py-4 text-center shadow-lg sm:self-auto">
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
-                    Word Length
+                <div className="self-start rounded-[1.5rem] border border-cyan-300/25 bg-slate-900/50 px-5 py-4 text-center shadow-lg sm:self-auto">
+                  <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
+                    Term Length
                   </p>
-                  <p className="mt-1 text-3xl font-black text-[#fff8e7]">
-                    {word.length}
-                  </p>
+                  <p className="mt-1 text-3xl font-black text-white">{word.length}</p>
                 </div>
               </div>
 
-              <div className="mt-3 border-b border-[#d9b15f]/30" />
+              <div className="mt-3 border-b border-white/10" />
             </div>
 
             <div className="flex flex-col items-center">
-              <div className="space-y-3 pt-2">
-                {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
-                  const guess = guesses[rowIndex] || '';
+              <div className="w-full overflow-x-auto pb-2">
+                <div className="mx-auto flex min-w-max flex-col items-center space-y-3 pt-2">
+                  {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
+                    const guess = guesses[rowIndex] || '';
 
-                  return (
-                    <div key={rowIndex} className="flex justify-center gap-2 sm:gap-3">
-                      {Array.from({ length: word.length }).map((_, colIndex) => {
-                        const letter = guess[colIndex] || '';
-                        const color = guess
-                          ? getColor(letter, colIndex)
-                          : 'bg-[#a56a35]/50 border-[#d8b56a]/35 text-[#fff3d4]';
+                    return (
+                      <div key={rowIndex} className="flex justify-center gap-2">
+                        {Array.from({ length: word.length }).map((_, colIndex) => {
+                          const letter = guess[colIndex] || '';
+                          const color = guess
+                            ? getColor(letter, colIndex)
+                            : 'bg-white/10 border-white/10 text-white';
 
-                        return (
-                          <div
-                            key={colIndex}
-                            className={`flex h-14 w-14 items-center justify-center rounded-[1rem] border-2 text-xl font-black uppercase shadow-md transition-all duration-200 sm:h-16 sm:w-16 sm:text-2xl ${color}`}
-                          >
-                            {letter}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+                          return (
+                            <div
+                              key={colIndex}
+                              className={`flex items-center justify-center border-2 font-black uppercase shadow-md transition-all duration-200 ${tileClasses} ${color}`}
+                            >
+                              {letter}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {status === 'playing' && (
                 <div className="mt-8 w-full max-w-xl">
                   <label
                     htmlFor="guess"
-                    className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-[#f3cf74]"
+                    className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200"
                   >
                     Enter your guess
                   </label>
@@ -302,7 +299,7 @@ const GamePage = () => {
                       value={currentGuess}
                       onChange={(e) =>
                         setCurrentGuess(
-                          e.target.value.toLowerCase().slice(0, word.length)
+                          e.target.value.toLowerCase().replace(/[^a-z]/g, '').slice(0, word.length)
                         )
                       }
                       onKeyDown={(e) => {
@@ -311,49 +308,51 @@ const GamePage = () => {
                         }
                       }}
                       maxLength={word.length}
-                      className="h-14 flex-1 rounded-[1.25rem] border-2 border-[#d9b15f] bg-[#fff3d4] px-5 text-lg font-semibold text-[#4d2a12] outline-none transition placeholder:text-[#8b5a2b]/70 focus:border-[#f3cf74] focus:ring-4 focus:ring-[#f3cf74]/20"
-                      placeholder={`Enter ${word.length}-letter word`}
+                      className="h-14 flex-1 rounded-[1.25rem] border border-white/15 bg-white/10 px-5 text-lg font-semibold text-white outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/20"
+                      placeholder={`Enter ${word.length}-letter element`}
                     />
                     <button
                       onClick={handleSubmit}
-                      className="h-14 rounded-[1.25rem] border-2 border-[#f3cf74] bg-[#d3a62f] px-8 text-lg font-black text-[#3a210f] shadow-lg transition hover:scale-[1.02] hover:bg-[#e0b43a] active:scale-[0.98]"
+                      className="h-14 rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-8 text-lg font-black text-slate-950 shadow-lg transition hover:scale-[1.02] hover:bg-cyan-200 active:scale-[0.98]"
                     >
-                      Guess
+                      Run Test
                     </button>
                   </div>
                 </div>
               )}
 
               {status === 'win' && (
-                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#89a95c] bg-[#6f8f45]/20 px-6 py-5 text-center shadow-lg">
-                  <p className="text-3xl font-black text-[#e7f2c8]">You won!</p>
-                  <p className="mt-2 text-base text-[#fff3d4]">
-                    Beautiful work. You guessed{' '}
-                    <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
+                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border border-emerald-300/40 bg-emerald-500/15 px-6 py-5 text-center shadow-lg">
+                  <p className="text-3xl font-black text-emerald-200">
+                    Reaction Complete!
+                  </p>
+                  <p className="mt-2 text-base text-slate-100">
+                    Nice work. You guessed{' '}
+                    <span className="font-black uppercase text-white">{word}</span>.
                   </p>
 
                   <button
                     onClick={handleNewGame}
-                    className="mt-5 h-12 rounded-[1.25rem] border-2 border-[#89a95c] bg-[#6f8f45] px-6 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#7fa255]"
+                    className="mt-5 h-12 rounded-[1.25rem] border border-emerald-300 bg-emerald-500 px-6 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-emerald-400"
                   >
-                    Play Again
+                    Start New Experiment
                   </button>
                 </div>
               )}
 
               {status === 'loss' && (
-                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border-2 border-[#b46251] bg-[#7a3b2e]/30 px-6 py-5 text-center shadow-lg">
-                  <p className="text-3xl font-black text-[#ffd8cc]">You lost</p>
-                  <p className="mt-2 text-base text-[#fff3d4]">
-                    The word was{' '}
-                    <span className="font-black uppercase text-[#fff8e7]">{word}</span>.
+                <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border border-red-300/40 bg-red-500/15 px-6 py-5 text-center shadow-lg">
+                  <p className="text-3xl font-black text-red-200">No Match Found</p>
+                  <p className="mt-2 text-base text-slate-100">
+                    The correct term was{' '}
+                    <span className="font-black uppercase text-white">{word}</span>.
                   </p>
 
                   <button
                     onClick={handleNewGame}
-                    className="mt-5 h-12 rounded-[1.25rem] border-2 border-[#b46251] bg-[#7a3b2e] px-6 text-lg font-black text-[#fff8e7] shadow-lg transition hover:scale-105 hover:bg-[#8c4a3b]"
+                    className="mt-5 h-12 rounded-[1.25rem] border border-red-300 bg-red-500 px-6 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-red-400"
                   >
-                    Try Another Word
+                    Try Another Experiment
                   </button>
                 </div>
               )}
@@ -361,66 +360,62 @@ const GamePage = () => {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="overflow-hidden rounded-[2.5rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+            <div className="overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md">
               <img
                 src={LibWordie}
-                alt="Vintage Lib Wordie artwork"
+                alt="Chem Lab artwork"
                 className="h-full w-full object-cover"
               />
             </div>
 
-            <div className="rounded-[2rem] border-2 border-[#d3a62f]/60 bg-[#8b5a2b]/90 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-              <h2
-                className="text-2xl font-black text-[#fff8e7]"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                Your Stats
-              </h2>
+            <div className="rounded-[2rem] border border-white/15 bg-white/10 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)] backdrop-blur-md">
+              <h2 className="text-2xl font-black text-white">Lab Stats</h2>
 
               <div className="mt-5 grid grid-cols-2 gap-4">
-                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Current Streak
                   </p>
-                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                  <p className="mt-2 text-3xl font-black text-white">
                     {stats.streak}
                   </p>
                 </div>
 
-                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Longest Streak
                   </p>
-                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                  <p className="mt-2 text-3xl font-black text-white">
                     {stats.longestStreak}
                   </p>
                 </div>
 
-                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Wins
                   </p>
-                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                  <p className="mt-2 text-3xl font-black text-white">
                     {stats.wins}
                   </p>
                 </div>
 
-                <div className="rounded-[1.25rem] bg-[#6b3f1d]/40 p-4 text-center">
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#f3cf74]">
+                <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
+                  <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Losses
                   </p>
-                  <p className="mt-2 text-3xl font-black text-[#fff8e7]">
+                  <p className="mt-2 text-3xl font-black text-white">
                     {stats.losses}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[1.5rem] border-2 border-[#d9b15f]/40 bg-[#6b3f1d]/50 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f3cf74]">
-                  Keep Going
+              <div className="mt-6 rounded-[1.5rem] border border-cyan-300/20 bg-cyan-400/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200">
+                  Keep Studying
                 </p>
-                <p className="mt-2 leading-7 text-[#f7e6bf]">
-                  Build your streak, beat your best run, and keep stacking wins.
+                <p className="mt-2 leading-7 text-slate-200">
+                  Build your streak, improve your chemistry vocabulary, and keep stacking
+                  successful experiments.
                 </p>
               </div>
             </div>
