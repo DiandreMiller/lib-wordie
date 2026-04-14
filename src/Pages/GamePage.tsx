@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LibWordie from '../assets/images/LibChemCartoon.png';
-import  { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
+import { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
+import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
 
 const MAX_GUESSES = 6;
 const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
@@ -13,6 +14,13 @@ type GameStats = {
   longestStreak: number;
 };
 
+type LetterStatus = 'correct' | 'present' | 'absent';
+
+type SubmittedRow = {
+  guess: string;
+  result: LetterStatus[];
+};
+
 const defaultStats: GameStats = {
   streak: 0,
   wins: 0,
@@ -22,13 +30,19 @@ const defaultStats: GameStats = {
 
 const GamePage = () => {
   const [word, setWord] = useState<string>('');
-  const [guesses, setGuesses] = useState<string[]>([]);
-  const [currentGuess, setCurrentGuess] = useState<string>('');
+  const [currentGuess, setCurrentGuess] = useState<string[]>([]);
+  const [currentRow, setCurrentRow] = useState<number>(0);
+  const [lockedLetters, setLockedLetters] = useState<Record<number, string>>({});
   const [status, setStatus] = useState<'loading' | 'playing' | 'win' | 'loss'>(
     'loading'
   );
   const [showHowToPlayModal, setShowHowToPlayModal] = useState<boolean>(false);
   const [stats, setStats] = useState<GameStats>(defaultStats);
+  const [submittedRows, setSubmittedRows] = useState<SubmittedRow[]>([]);
+  const [showMore, setShowMore] = useState<boolean>(false);
+
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  const mobileInputRef = useRef<HTMLInputElement | null>(null);
 
   const generateNewWord = () => {
     const randomIndex = Math.floor(Math.random() * PERIODIC_TABLE_ELEMENTS.length);
@@ -40,11 +54,15 @@ const GamePage = () => {
     localStorage.setItem(GAME_STATS_STORAGE_KEY, JSON.stringify(updatedStats));
   };
 
-
   useEffect(() => {
     const generatedWord = generateNewWord();
     setWord(generatedWord);
     setStatus('playing');
+    setLockedLetters({});
+    setCurrentRow(0);
+    setCurrentGuess(Array(generatedWord.length).fill(''));
+    setSubmittedRows([]);
+    setShowMore(false);
 
     const hasDismissedModal = localStorage.getItem(HOW_TO_PLAY_STORAGE_KEY);
     if (!hasDismissedModal) {
@@ -61,25 +79,88 @@ const GamePage = () => {
     }
   }, []);
 
+  console.log('word:', word);
+
+  const focusGameInput = () => {
+    boardRef.current?.focus();
+    mobileInputRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (status === 'playing' && !showHowToPlayModal) {
+      focusGameInput();
+    }
+  }, [status, showHowToPlayModal, currentRow]);
+
   const handleCloseHowToPlayModal = () => {
     setShowHowToPlayModal(false);
     localStorage.setItem(HOW_TO_PLAY_STORAGE_KEY, 'true');
+    setTimeout(() => focusGameInput(), 0);
   };
 
   const handleOpenHowToPlayModal = () => {
     setShowHowToPlayModal(true);
   };
 
+  const getLetterCounts = (targetWord: string) => {
+    const counts: Record<string, number> = {};
+    for (const char of targetWord) {
+      counts[char] = (counts[char] || 0) + 1;
+    }
+    return counts;
+  };
+
+  const evaluateGuess = (guess: string, targetWord: string): LetterStatus[] => {
+    const result: LetterStatus[] = Array(guess.length).fill('absent');
+    const letterCounts = getLetterCounts(targetWord);
+
+    for (let i = 0; i < guess.length; i++) {
+      if (guess[i] === targetWord[i]) {
+        result[i] = 'correct';
+        letterCounts[guess[i]]--;
+      }
+    }
+
+    for (let i = 0; i < guess.length; i++) {
+      if (result[i] === 'correct') continue;
+
+      const letter = guess[i];
+      if (letterCounts[letter] > 0) {
+        result[i] = 'present';
+        letterCounts[letter]--;
+      }
+    }
+
+    return result;
+  };
+
   const handleSubmit = () => {
     if (status !== 'playing') return;
 
-    const guess = currentGuess.toLowerCase().trim();
+    const guess = currentGuess.join('');
 
     if (guess.length !== word.length) return;
+    if (currentGuess.some((letter) => !letter)) return;
 
-    const newGuesses = [...guesses, guess];
-    setGuesses(newGuesses);
-    setCurrentGuess('');
+    for (const [index, lockedLetter] of Object.entries(lockedLetters)) {
+      if (guess[Number(index)] !== lockedLetter) {
+        return;
+      }
+    }
+
+    const result = evaluateGuess(guess, word);
+    const newSubmittedRows = [...submittedRows, { guess, result }];
+    setSubmittedRows(newSubmittedRows);
+
+    const newLockedLetters = { ...lockedLetters };
+
+    result.forEach((status, i) => {
+      if (status === 'correct') {
+        newLockedLetters[i] = guess[i];
+      }
+    });
+
+    setLockedLetters(newLockedLetters);
 
     if (guess === word) {
       const updatedStats: GameStats = {
@@ -91,45 +172,99 @@ const GamePage = () => {
 
       saveStats(updatedStats);
       setStatus('win');
-    } else if (newGuesses.length === MAX_GUESSES) {
+      return;
+    }
+
+    if (newSubmittedRows.length === MAX_GUESSES) {
       const updatedStats: GameStats = {
         ...stats,
         streak: 0,
         losses: stats.losses + 1,
+        longestStreak: stats.longestStreak,
       };
 
       saveStats(updatedStats);
       setStatus('loss');
+      setCurrentGuess(Array(word.length).fill(''));
+      return;
     }
+
+    const nextGuessArray = Array(word.length).fill('');
+
+    Object.entries(newLockedLetters).forEach(([index, letter]) => {
+      nextGuessArray[Number(index)] = letter;
+    });
+
+    setCurrentGuess(nextGuessArray);
+    setCurrentRow(newSubmittedRows.length);
   };
 
   const handleNewGame = () => {
     const newWord = generateNewWord();
     setWord(newWord);
-    setGuesses([]);
-    setCurrentGuess('');
+    setCurrentGuess(Array(newWord.length).fill(''));
+    setLockedLetters({});
+    setCurrentRow(0);
     setStatus('playing');
+    setSubmittedRows([]);
+    setShowMore(false);
+    setTimeout(() => focusGameInput(), 0);
   };
 
-  const getColor = (letter: string, index: number) => {
-    if (word[index] === letter) {
-      return 'bg-emerald-500 border-emerald-300 text-white';
+  const handleBoardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (status !== 'playing') return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+      return;
     }
 
-    if (word.includes(letter)) {
-      return 'bg-yellow-300 border-yellow-200 text-slate-950';
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+
+      const chars = [...currentGuess];
+
+      for (let i = word.length - 1; i >= 0; i--) {
+        if (!(i in lockedLetters) && chars[i]) {
+          chars[i] = '';
+          setCurrentGuess(chars);
+          return;
+        }
+      }
+
+      return;
     }
 
-    return 'bg-red-500 border-red-300 text-white';
+    if (/^[a-zA-Z]$/.test(e.key)) {
+      e.preventDefault();
+
+      const chars = [...currentGuess];
+      while (chars.length < word.length) {
+        chars.push('');
+      }
+
+      for (let i = 0; i < word.length; i++) {
+        if (!(i in lockedLetters) && !chars[i]) {
+          chars[i] = e.key.toLowerCase();
+          setCurrentGuess(chars);
+          return;
+        }
+      }
+    }
   };
 
-  const getTileClasses = () => {
+  const getTileSizeClasses = () => {
     if (word.length >= 11) {
       return 'h-9 w-9 text-sm rounded-[0.7rem] sm:h-11 sm:w-11 sm:text-base lg:h-12 lg:w-12 lg:text-lg';
     }
 
     if (word.length >= 9) {
       return 'h-10 w-10 text-base rounded-[0.75rem] sm:h-12 sm:w-12 sm:text-lg lg:h-14 lg:w-14 lg:text-xl';
+    }
+
+    if (word.length >= 7) {
+      return 'h-11 w-11 text-base rounded-[0.8rem] sm:h-13 sm:w-13 sm:text-lg lg:h-15 lg:w-15 lg:text-xl';
     }
 
     return 'h-12 w-12 text-lg rounded-[0.9rem] sm:h-14 sm:w-14 sm:text-xl lg:h-16 lg:w-16 lg:text-2xl';
@@ -147,7 +282,8 @@ const GamePage = () => {
     );
   }
 
-  const tileClasses = getTileClasses();
+  const tileClasses = getTileSizeClasses();
+  const elementData = ELEMENT_DETAILS[word];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
@@ -171,8 +307,8 @@ const GamePage = () => {
             <h2 className="text-3xl font-black text-white">How to Play</h2>
 
             <p className="mt-3 text-base leading-7 text-slate-200">
-              Guess the hidden chemistry term in six tries. Each guess must match the
-              exact letter count for that round.
+              Guess the hidden element in six tries. Type directly into the board.
+              Green letters stay locked in place for the next guess.
             </p>
 
             <div className="mt-6 space-y-4 text-slate-200">
@@ -188,15 +324,15 @@ const GamePage = () => {
                 <div className="mt-1 h-5 w-5 rounded-full border border-yellow-200 bg-yellow-300" />
                 <p>
                   <span className="font-bold text-white">Yellow</span> means the letter
-                  is in the term, but in the wrong place.
+                  is in the element, but in the wrong place.
                 </p>
               </div>
 
               <div className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
                 <div className="mt-1 h-5 w-5 rounded-full border border-red-300 bg-red-500" />
                 <p>
-                  <span className="font-bold text-white">Red</span> means there is no
-                  reaction — that letter is not in the term.
+                  <span className="font-bold text-white">Red</span> means the letter is
+                  not in the element.
                 </p>
               </div>
             </div>
@@ -206,8 +342,8 @@ const GamePage = () => {
                 Lab Tip
               </p>
               <p className="mt-2 leading-7 text-slate-200">
-                Element names can range from 3 to 13 letters, so pay close attention
-                to the term length before guessing.
+                Element names range from 3 to 13 letters. Correct letters stay locked,
+                so use them to narrow the answer faster.
               </p>
             </div>
           </div>
@@ -240,8 +376,8 @@ const GamePage = () => {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1">
                   <p className="max-w-xl text-base leading-6 text-slate-200 sm:text-lg">
-                    Guess the hidden element name in six tries. Every round gives you
-                    a periodic table element between 3 and 13 letters.
+                    Guess the hidden element name in six tries. Every round gives you a
+                    periodic table element between 3 and 13 letters.
                   </p>
                 </div>
 
@@ -256,18 +392,58 @@ const GamePage = () => {
               <div className="mt-3 border-b border-white/10" />
             </div>
 
-            <div className="flex flex-col items-center">
+            <div
+              ref={boardRef}
+              tabIndex={0}
+              onKeyDown={handleBoardKeyDown}
+              onClick={focusGameInput}
+              className="flex flex-col items-center outline-none"
+            >
+              <input
+                ref={mobileInputRef}
+                type="text"
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                value=""
+                onChange={() => {}}
+                onKeyDown={(e) => {
+                  handleBoardKeyDown(
+                    e as unknown as React.KeyboardEvent<HTMLDivElement>
+                  );
+                }}
+                className="absolute left-0 top-0 h-px w-px opacity-0"
+                style={{ caretColor: 'transparent' }}
+              />
+
               <div className="w-full overflow-x-auto pb-2">
                 <div className="mx-auto flex min-w-max flex-col items-center space-y-3 pt-2">
                   {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
-                    const guess = guesses[rowIndex] || '';
+                    const submittedRow = submittedRows[rowIndex];
+                    const isSubmittedRow = !!submittedRow;
+                    const isActiveRow = status === 'playing' && rowIndex === currentRow;
+
+                    const guess = isSubmittedRow
+                      ? submittedRow.guess.split('')
+                      : isActiveRow
+                      ? currentGuess
+                      : Array(word.length).fill('');
 
                     return (
                       <div key={rowIndex} className="flex justify-center gap-2">
                         {Array.from({ length: word.length }).map((_, colIndex) => {
                           const letter = guess[colIndex] || '';
-                          const color = guess
-                            ? getColor(letter, colIndex)
+                          const isLockedLetter = isActiveRow && colIndex in lockedLetters;
+
+                          const color = isSubmittedRow
+                            ? submittedRow.result[colIndex] === 'correct'
+                              ? 'bg-emerald-500 border-emerald-300 text-white'
+                              : submittedRow.result[colIndex] === 'present'
+                              ? 'bg-yellow-300 border-yellow-200 text-slate-950'
+                              : 'bg-red-500 border-red-300 text-white'
+                            : isLockedLetter
+                            ? 'bg-emerald-500 border-emerald-300 text-white'
                             : 'bg-white/10 border-white/10 text-white';
 
                           return (
@@ -286,43 +462,22 @@ const GamePage = () => {
               </div>
 
               {status === 'playing' && (
-                <div className="mt-8 w-full max-w-xl">
-                  <label
-                    htmlFor="guess"
-                    className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200"
+                <div className="mt-6 flex w-full max-w-md justify-center">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={currentGuess.some((letter) => !letter)}
+                    className={`w-full rounded-[1.25rem] border px-6 py-4 text-lg font-black shadow transition ${
+                      currentGuess.every((letter) => letter)
+                        ? 'border-cyan-300 bg-cyan-300 text-slate-950 hover:scale-[1.02] hover:bg-cyan-200 active:scale-[0.98]'
+                        : 'cursor-not-allowed border-slate-700 bg-slate-800 text-slate-500'
+                    }`}
                   >
-                    Enter your guess
-                  </label>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <input
-                      id="guess"
-                      value={currentGuess}
-                      onChange={(e) =>
-                        setCurrentGuess(
-                          e.target.value.toLowerCase().replace(/[^a-z]/g, '').slice(0, word.length)
-                        )
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSubmit();
-                        }
-                      }}
-                      maxLength={word.length}
-                      className="h-14 flex-1 rounded-[1.25rem] border border-white/15 bg-white/10 px-5 text-lg font-semibold text-white outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/20"
-                      placeholder={`Enter ${word.length}-letter element`}
-                    />
-                    <button
-                      onClick={handleSubmit}
-                      className="h-14 rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-8 text-lg font-black text-slate-950 shadow-lg transition hover:scale-[1.02] hover:bg-cyan-200 active:scale-[0.98]"
-                    >
-                      Run Test
-                    </button>
-                  </div>
+                    Run Test
+                  </button>
                 </div>
               )}
 
-              {status === 'win' && (
+              {status === 'win' && elementData && (
                 <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border border-emerald-300/40 bg-emerald-500/15 px-6 py-5 text-center shadow-lg">
                   <p className="text-3xl font-black text-emerald-200">
                     Reaction Complete!
@@ -331,6 +486,51 @@ const GamePage = () => {
                     Nice work. You guessed{' '}
                     <span className="font-black uppercase text-white">{word}</span>.
                   </p>
+
+                  <div className="mt-5 rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-left">
+                    <p className="text-sm uppercase tracking-[0.2em] text-cyan-200">
+                      Element Data
+                    </p>
+                    <p className="mt-2 text-xl font-black text-white">
+                      {word.charAt(0).toUpperCase() + word.slice(1)} ({elementData.symbol})
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Atomic Number: {elementData.atomicNumber}
+                    </p>
+                    <p className="mt-3 text-slate-200">{elementData.shortFact}</p>
+
+                    <button
+                      onClick={() => setShowMore((prev) => !prev)}
+                      className="mt-4 rounded-[1rem] border border-cyan-300 bg-cyan-300 px-4 py-2 font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-cyan-200"
+                    >
+                      {showMore ? 'Show Less' : 'See More'}
+                    </button>
+
+                    {showMore && (
+                      <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Overview
+                        </p>
+                        <p className="mt-2 text-slate-200">{elementData.overview}</p>
+
+                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Common Uses
+                        </p>
+                        <div className="mt-2 space-y-2">
+                          {elementData.uses.map((use, index) => (
+                            <p key={index} className="text-slate-200">
+                              • {use}
+                            </p>
+                          ))}
+                        </div>
+
+                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Fun Fact
+                        </p>
+                        <p className="mt-2 text-slate-200">{elementData.funFact}</p>
+                      </div>
+                    )}
+                  </div>
 
                   <button
                     onClick={handleNewGame}
@@ -377,9 +577,7 @@ const GamePage = () => {
                   <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Current Streak
                   </p>
-                  <p className="mt-2 text-3xl font-black text-white">
-                    {stats.streak}
-                  </p>
+                  <p className="mt-2 text-3xl font-black text-white">{stats.streak}</p>
                 </div>
 
                 <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
@@ -395,18 +593,14 @@ const GamePage = () => {
                   <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Wins
                   </p>
-                  <p className="mt-2 text-3xl font-black text-white">
-                    {stats.wins}
-                  </p>
+                  <p className="mt-2 text-3xl font-black text-white">{stats.wins}</p>
                 </div>
 
                 <div className="rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-center">
                   <p className="text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Losses
                   </p>
-                  <p className="mt-2 text-3xl font-black text-white">
-                    {stats.losses}
-                  </p>
+                  <p className="mt-2 text-3xl font-black text-white">{stats.losses}</p>
                 </div>
               </div>
 
