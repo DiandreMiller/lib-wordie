@@ -40,6 +40,7 @@ const GamePage = () => {
     localStorage.setItem(GAME_STATS_STORAGE_KEY, JSON.stringify(updatedStats));
   };
 
+
   useEffect(() => {
     const generatedWord = generateNewWord();
     setWord(generatedWord);
