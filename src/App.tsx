@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from './Pages/HomePage';
 import GamePage from './Pages/GamePage';
 import FOUROFOUR from "./Pages/FOUROFOUR";
-import GamePageTest from "./Pages/GamePlayTest";
+// import GamePageTest from "./Pages/GamePlayTest";
 import './App.css'
 
 // Todo:
@@ -18,7 +18,7 @@ function App() {
         <Routes>
           <Route element={<HomePage />} path='/' />
           <Route element={<GamePage />} path='/play' />
-          <Route element={<GamePageTest />} path='/test' />
+          {/* <Route element={<GamePageTest />} path='/test' /> */}
           <Route element={<FOUROFOUR />} path='*' />
         </Routes>
       </BrowserRouter>
