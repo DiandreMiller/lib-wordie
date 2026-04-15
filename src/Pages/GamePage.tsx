@@ -261,23 +261,23 @@ const GamePage = () => {
   };
 
   const getTileSizeClasses = () => {
-    if (word.length >= 12) {
-      return 'h-8 w-8 text-xs rounded-[0.55rem] sm:h-10 sm:w-10 sm:text-sm lg:h-12 lg:w-12 lg:text-lg';
+    if (word.length >= 11) {
+      return 'h-7 w-7 text-[10px] rounded-[0.45rem] sm:h-9 sm:w-9 sm:text-sm lg:h-12 lg:w-12 lg:text-lg';
     }
   
-    if (word.length >= 10) {
-      return 'h-9 w-9 text-sm rounded-[0.6rem] sm:h-11 sm:w-11 sm:text-base lg:h-13 lg:w-13 lg:text-lg';
+    if (word.length >= 9) {
+      return 'h-8 w-8 text-xs rounded-[0.5rem] sm:h-10 sm:w-10 sm:text-sm lg:h-13 lg:w-13 lg:text-lg';
     }
   
-    if (word.length >= 8) {
-      return 'h-10 w-10 text-sm rounded-[0.7rem] sm:h-12 sm:w-12 sm:text-lg lg:h-14 lg:w-14 lg:text-xl';
+    if (word.length >= 7) {
+      return 'h-9 w-9 text-sm rounded-[0.55rem] sm:h-11 sm:w-11 sm:text-base lg:h-14 lg:w-14 lg:text-xl';
     }
   
-    if (word.length >= 6) {
-      return 'h-11 w-11 text-base rounded-[0.8rem] sm:h-13 sm:w-13 sm:text-lg lg:h-15 lg:w-15 lg:text-xl';
+    if (word.length >= 5) {
+      return 'h-10 w-10 text-sm rounded-[0.65rem] sm:h-12 sm:w-12 sm:text-lg lg:h-15 lg:w-15 lg:text-xl';
     }
   
-    return 'h-12 w-12 text-lg rounded-[0.9rem] sm:h-14 sm:w-14 sm:text-xl lg:h-16 lg:w-16 lg:text-2xl';
+    return 'h-11 w-11 text-base rounded-[0.7rem] sm:h-13 sm:w-13 sm:text-lg lg:h-16 lg:w-16 lg:text-2xl';
   };
 
   if (status === 'loading') {
@@ -292,7 +292,15 @@ const GamePage = () => {
     );
   }
 
+  const getRowGapClass = () => {
+    if (word.length >= 11) return 'gap-0.5';
+    if (word.length >= 9) return 'gap-1';
+    if (word.length >= 7) return 'gap-1.5';
+    return 'gap-2';
+  };
+
   const tileClasses = getTileSizeClasses();
+  const rowGapClass = getRowGapClass();
   const elementData = ELEMENT_DETAILS[word];
 
   return (
@@ -446,7 +454,7 @@ const GamePage = () => {
                       : Array(word.length).fill('');
 
                     return (
-                      <div key={rowIndex} className={`flex justify-center ${word.length >= 10 ? 'gap-1' : 'gap-2'}`} >
+                      <div key={rowIndex} className={`flex justify-center ${rowGapClass}`}>
                         {Array.from({ length: word.length }).map((_, colIndex) => {
                           const letter = guess[colIndex] || '';
                           const isLockedLetter = isActiveRow && colIndex in lockedLetters;
