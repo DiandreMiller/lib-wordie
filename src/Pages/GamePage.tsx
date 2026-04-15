@@ -261,18 +261,22 @@ const GamePage = () => {
   };
 
   const getTileSizeClasses = () => {
-    if (word.length >= 11) {
-      return 'h-9 w-9 text-sm rounded-[0.7rem] sm:h-11 sm:w-11 sm:text-base lg:h-12 lg:w-12 lg:text-lg';
+    if (word.length >= 12) {
+      return 'h-8 w-8 text-xs rounded-[0.55rem] sm:h-10 sm:w-10 sm:text-sm lg:h-12 lg:w-12 lg:text-lg';
     }
-
-    if (word.length >= 9) {
-      return 'h-10 w-10 text-base rounded-[0.75rem] sm:h-12 sm:w-12 sm:text-lg lg:h-14 lg:w-14 lg:text-xl';
+  
+    if (word.length >= 10) {
+      return 'h-9 w-9 text-sm rounded-[0.6rem] sm:h-11 sm:w-11 sm:text-base lg:h-13 lg:w-13 lg:text-lg';
     }
-
-    if (word.length >= 7) {
+  
+    if (word.length >= 8) {
+      return 'h-10 w-10 text-sm rounded-[0.7rem] sm:h-12 sm:w-12 sm:text-lg lg:h-14 lg:w-14 lg:text-xl';
+    }
+  
+    if (word.length >= 6) {
       return 'h-11 w-11 text-base rounded-[0.8rem] sm:h-13 sm:w-13 sm:text-lg lg:h-15 lg:w-15 lg:text-xl';
     }
-
+  
     return 'h-12 w-12 text-lg rounded-[0.9rem] sm:h-14 sm:w-14 sm:text-xl lg:h-16 lg:w-16 lg:text-2xl';
   };
 
@@ -378,7 +382,7 @@ const GamePage = () => {
         </div>
 
         <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
-          <div className="rounded-[2.5rem] border border-white/15 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-8">
+          <div className="rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md sm:rounded-[2.5rem] sm:p-8">
             <div className="mb-4 flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200 sm:text-sm">
                 Chemistry Study Mode
@@ -442,7 +446,7 @@ const GamePage = () => {
                       : Array(word.length).fill('');
 
                     return (
-                      <div key={rowIndex} className="flex justify-center gap-2">
+                      <div key={rowIndex} className={`flex justify-center ${word.length >= 10 ? 'gap-1' : 'gap-2'}`} >
                         {Array.from({ length: word.length }).map((_, colIndex) => {
                           const letter = guess[colIndex] || '';
                           const isLockedLetter = isActiveRow && colIndex in lockedLetters;
