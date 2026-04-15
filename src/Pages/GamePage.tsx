@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import LibWordie from '../assets/images/LibChemCartoon.png';
 import { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
 import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
+import { updateDailySolveStreak } from '../utils/dailySolveStreak';
+import DailySolveStreak from '../commons/DailySolveStreak';
 
 const MAX_GUESSES = 6;
 const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
@@ -40,6 +42,7 @@ const GamePage = () => {
   const [stats, setStats] = useState<GameStats>(defaultStats);
   const [submittedRows, setSubmittedRows] = useState<SubmittedRow[]>([]);
   const [showMore, setShowMore] = useState<boolean>(false);
+  const [solveStreakRefreshKey, setSolveStreakRefreshKey] = useState(0);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -136,45 +139,48 @@ const GamePage = () => {
 
   const handleSubmit = () => {
     if (status !== 'playing') return;
-
+  
     const guess = currentGuess.join('');
-
+  
     if (guess.length !== word.length) return;
     if (currentGuess.some((letter) => !letter)) return;
-
+  
     for (const [index, lockedLetter] of Object.entries(lockedLetters)) {
       if (guess[Number(index)] !== lockedLetter) {
         return;
       }
     }
-
+  
     const result = evaluateGuess(guess, word);
     const newSubmittedRows = [...submittedRows, { guess, result }];
     setSubmittedRows(newSubmittedRows);
-
+  
     const newLockedLetters = { ...lockedLetters };
-
+  
     result.forEach((status, i) => {
       if (status === 'correct') {
         newLockedLetters[i] = guess[i];
       }
     });
-
+  
     setLockedLetters(newLockedLetters);
-
+  
     if (guess === word) {
+      updateDailySolveStreak();
+      setSolveStreakRefreshKey((prev) => prev + 1);
+  
       const updatedStats: GameStats = {
         ...stats,
         streak: stats.streak + 1,
         wins: stats.wins + 1,
         longestStreak: Math.max(stats.longestStreak, stats.streak + 1),
       };
-
+  
       saveStats(updatedStats);
       setStatus('win');
       return;
     }
-
+  
     if (newSubmittedRows.length === MAX_GUESSES) {
       const updatedStats: GameStats = {
         ...stats,
@@ -182,19 +188,19 @@ const GamePage = () => {
         losses: stats.losses + 1,
         longestStreak: stats.longestStreak,
       };
-
+  
       saveStats(updatedStats);
       setStatus('loss');
       setCurrentGuess(Array(word.length).fill(''));
       return;
     }
-
+  
     const nextGuessArray = Array(word.length).fill('');
-
+  
     Object.entries(newLockedLetters).forEach(([index, letter]) => {
       nextGuessArray[Number(index)] = letter;
     });
-
+  
     setCurrentGuess(nextGuessArray);
     setCurrentRow(newSubmittedRows.length);
   };
@@ -287,6 +293,11 @@ const GamePage = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-40">
+        <DailySolveStreak refreshKey={solveStreakRefreshKey} />
+      </div>
+      <div className="absolute top-4 right-4 z-50">
+      </div>
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-6rem] top-12 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="absolute right-[-4rem] top-0 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl" />
