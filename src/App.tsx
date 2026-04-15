@@ -9,7 +9,7 @@ import './App.css'
 
 // Todo:
 
-//  show facts even in loss, chem facts daily, seo, title, offline function, footer, make sure app logo is correct
+// chem facts daily, seo, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
 
 // npm install react-confetti
 

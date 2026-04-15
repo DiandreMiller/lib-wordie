@@ -47,6 +47,7 @@ const GamePage = () => {
   const [showMore, setShowMore] = useState<boolean>(false);
   const [solveStreakRefreshKey, setSolveStreakRefreshKey] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [quizReady, setQuizReady] = useState(false);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -183,7 +184,7 @@ const GamePage = () => {
       saveStats(updatedStats);
       setStatus('win');
       saveAnsweredElement(word, true);
-      maybeOpenQuiz();
+      maybeUnlockQuiz();
       return;
     }
   
@@ -199,7 +200,7 @@ const GamePage = () => {
       setStatus('loss');
       saveAnsweredElement(word, false);
       setCurrentGuess(Array(word.length).fill(''));
-      maybeOpenQuiz();
+      maybeUnlockQuiz();
       return;
     }
   
@@ -222,6 +223,7 @@ const GamePage = () => {
     setStatus('playing');
     setSubmittedRows([]);
     setShowMore(false);
+    setQuizReady(false);
     setTimeout(() => focusGameInput(), 0);
   };
 
@@ -340,11 +342,11 @@ const GamePage = () => {
   const displayRows = splitWordForDisplay(word);
   const isWrappedWord = word.length > 9;
 
-  const maybeOpenQuiz = () => {
+  const maybeUnlockQuiz = () => {
     const history = getAnsweredElements();
     console.log('history length:', history.length, history);
     if (history.length === 10) {
-      setShowQuiz(true);
+      setQuizReady(true);
     }
   };
 
@@ -635,6 +637,23 @@ if (showQuiz) {
                     )}
                   </div>
 
+                  {quizReady && (
+                    <div className="mt-5">
+                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                        Review Quiz Unlocked
+                      </p>
+                      <button
+                        onClick={() => {
+                          setQuizReady(false);
+                          setShowQuiz(true);
+                        }}
+                        className="h-12 rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-6 text-lg font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-cyan-200"
+                      >
+                        Start Review Quiz
+                      </button>
+                    </div>
+                  )}
+
                   <button
                     onClick={handleNewGame}
                     className="mt-5 h-12 rounded-[1.25rem] border border-emerald-300 bg-emerald-500 px-6 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-emerald-400"
@@ -696,6 +715,23 @@ if (showQuiz) {
                       </div>
                     )}
                   </div>
+
+                  {quizReady && (
+                    <div className="mt-5">
+                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                        Review Quiz Unlocked
+                      </p>
+                      <button
+                        onClick={() => {
+                          setQuizReady(false);
+                          setShowQuiz(true);
+                        }}
+                        className="h-12 rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-6 text-lg font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-cyan-200"
+                      >
+                        Start Review Quiz
+                      </button>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleNewGame}
