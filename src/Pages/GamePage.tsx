@@ -3,7 +3,9 @@ import LibWordie from '../assets/images/LibChemCartoon.png';
 import { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
 import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
 import { updateDailySolveStreak } from '../utils/dailySolveStreak';
-import DailySolveStreak from '../commons/DailySolveStreak';
+import DailySolveStreak from '../components/DailySolveStreak';
+import { saveAnsweredElement, getAnsweredElements, clearAnsweredElements } from '../utils/answerHistory';
+import Quiz from '../components/Quiz';
 // import Confetti from 'react-confetti';
 
 const MAX_GUESSES = 6;
@@ -44,6 +46,7 @@ const GamePage = () => {
   const [submittedRows, setSubmittedRows] = useState<SubmittedRow[]>([]);
   const [showMore, setShowMore] = useState<boolean>(false);
   const [solveStreakRefreshKey, setSolveStreakRefreshKey] = useState(0);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -91,10 +94,10 @@ const GamePage = () => {
   };
 
   useEffect(() => {
-    if (status === 'playing' && !showHowToPlayModal) {
+    if (status === 'playing' && !showHowToPlayModal && !showQuiz) {
       focusGameInput();
     }
-  }, [status, showHowToPlayModal, currentRow]);
+  }, [status, showHowToPlayModal, currentRow, showQuiz]);
 
   const handleCloseHowToPlayModal = () => {
     setShowHowToPlayModal(false);
@@ -169,16 +172,18 @@ const GamePage = () => {
     if (guess === word) {
       updateDailySolveStreak();
       setSolveStreakRefreshKey((prev) => prev + 1);
-  
+    
       const updatedStats: GameStats = {
         ...stats,
         streak: stats.streak + 1,
         wins: stats.wins + 1,
         longestStreak: Math.max(stats.longestStreak, stats.streak + 1),
       };
-  
+    
       saveStats(updatedStats);
       setStatus('win');
+      saveAnsweredElement(word, true);
+      maybeOpenQuiz();
       return;
     }
   
@@ -189,10 +194,12 @@ const GamePage = () => {
         losses: stats.losses + 1,
         longestStreak: stats.longestStreak,
       };
-  
+    
       saveStats(updatedStats);
       setStatus('loss');
+      saveAnsweredElement(word, false);
       setCurrentGuess(Array(word.length).fill(''));
+      maybeOpenQuiz();
       return;
     }
   
@@ -332,6 +339,22 @@ const GamePage = () => {
   const elementData = ELEMENT_DETAILS[word];
   const displayRows = splitWordForDisplay(word);
   const isWrappedWord = word.length > 9;
+
+  const maybeOpenQuiz = () => {
+    const history = getAnsweredElements();
+    console.log('history length:', history.length, history);
+    if (history.length === 10) {
+      setShowQuiz(true);
+    }
+  };
+
+if (showQuiz) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4">
+      <Quiz onExit={() => setShowQuiz(false)} onComplete={() => clearAnsweredElements()} />
+    </div>
+  );
+}
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
