@@ -621,13 +621,58 @@ const GamePage = () => {
                 </div>
               )}
 
-              {status === 'loss' && (
+              {status === 'loss' && elementData && (
                 <div className="mt-8 w-full max-w-xl rounded-[1.75rem] border border-red-300/40 bg-red-500/15 px-6 py-5 text-center shadow-lg">
                   <p className="text-3xl font-black text-red-200">No Match Found</p>
                   <p className="mt-2 text-base text-slate-100">
                     The correct term was{' '}
                     <span className="font-black uppercase text-white">{word}</span>.
                   </p>
+
+                  <div className="mt-5 rounded-[1.25rem] border border-white/10 bg-slate-900/40 p-4 text-left">
+                    <p className="text-sm uppercase tracking-[0.2em] text-cyan-200">
+                      Element Data
+                    </p>
+                    <p className="mt-2 text-xl font-black text-white">
+                      {word.charAt(0).toUpperCase() + word.slice(1)} ({elementData.symbol})
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Atomic Number: {elementData.atomicNumber}
+                    </p>
+                    <p className="mt-3 text-slate-200">{elementData.shortFact}</p>
+
+                    <button
+                      onClick={() => setShowMore((prev) => !prev)}
+                      className="mt-4 rounded-[1rem] border border-cyan-300 bg-cyan-300 px-4 py-2 font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-cyan-200"
+                    >
+                      {showMore ? 'Show Less' : 'See More'}
+                    </button>
+
+                    {showMore && (
+                      <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Overview
+                        </p>
+                        <p className="mt-2 text-slate-200">{elementData.overview}</p>
+
+                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Common Uses
+                        </p>
+                        <div className="mt-2 space-y-2">
+                          {elementData.uses.map((use, index) => (
+                            <p key={index} className="text-slate-200">
+                              • {use}
+                            </p>
+                          ))}
+                        </div>
+
+                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                          Fun Fact
+                        </p>
+                        <p className="mt-2 text-slate-200">{elementData.funFact}</p>
+                      </div>
+                    )}
+                  </div>
 
                   <button
                     onClick={handleNewGame}
