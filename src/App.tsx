@@ -11,6 +11,8 @@ import './App.css'
 
 //  show facts even in loss, chem facts daily, seo, title, offline function, footer, turn to an app
 
+// npm install react-confetti
+
 function App() {
   return (
     <div>
