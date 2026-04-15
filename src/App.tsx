@@ -9,7 +9,7 @@ import './App.css'
 
 // Todo:
 
-//  chem facts daily, seo, title, offline function, footer, turn to an app
+//  show facts even in loss, chem facts daily, seo, title, offline function, footer, turn to an app
 
 function App() {
   return (

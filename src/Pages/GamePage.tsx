@@ -640,7 +640,7 @@ const GamePage = () => {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md">
+            <div className="hidden overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-md lg:block">
               <img
                 src={LibWordie}
                 alt="Chem Lab artwork"
