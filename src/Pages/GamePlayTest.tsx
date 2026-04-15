@@ -3,7 +3,7 @@
   import { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
   import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
   import { updateDailySolveStreak } from '../utils/dailySolveStreak';
-  import DailySolveStreak from '../commons/DailySolveStreak';
+  import DailySolveStreak from '../components/DailySolveStreak';
   
   const MAX_GUESSES = 6;
   const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
