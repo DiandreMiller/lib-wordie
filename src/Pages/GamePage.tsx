@@ -299,9 +299,38 @@ const GamePage = () => {
     return 'gap-2';
   };
 
+  const splitWordForDisplay = (targetWord: string) => {
+    if (targetWord.length <= 9) {
+      return [targetWord.split('')];
+    }
+  
+    const firstRow = [...targetWord.slice(0, 6).split(''), '-'];
+    const secondRow = targetWord.slice(6).split('');
+  
+    return [firstRow, secondRow];
+  };
+  
+  const getGlobalIndex = (
+    rowIndex: number,
+    colIndex: number,
+    isWrappedWord: boolean
+  ) => {
+    if (!isWrappedWord) {
+      return colIndex;
+    }
+  
+    if (rowIndex === 0) {
+      return colIndex;
+    }
+  
+    return colIndex + 6;
+  };
+
   const tileClasses = getTileSizeClasses();
   const rowGapClass = getRowGapClass();
   const elementData = ELEMENT_DETAILS[word];
+  const displayRows = splitWordForDisplay(word);
+  const isWrappedWord = word.length > 9;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
@@ -442,45 +471,72 @@ const GamePage = () => {
 
               <div className="w-full overflow-x-auto pb-2">
                 <div className="mx-auto flex min-w-max flex-col items-center space-y-3 pt-2">
-                  {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
-                    const submittedRow = submittedRows[rowIndex];
-                    const isSubmittedRow = !!submittedRow;
-                    const isActiveRow = status === 'playing' && rowIndex === currentRow;
+                {Array.from({ length: MAX_GUESSES }).map((_, boardRowIndex) => {
+                  const submittedRow = submittedRows[boardRowIndex];
+                  const isSubmittedRow = !!submittedRow;
+                  const isActiveRow = status === 'playing' && boardRowIndex === currentRow;
 
-                    const guess = isSubmittedRow
-                      ? submittedRow.guess.split('')
-                      : isActiveRow
-                      ? currentGuess
-                      : Array(word.length).fill('');
+                  const guess = isSubmittedRow
+                    ? submittedRow.guess.split('')
+                    : isActiveRow
+                    ? currentGuess
+                    : Array(word.length).fill('');
 
-                    return (
-                      <div key={rowIndex} className={`flex justify-center ${rowGapClass}`}>
-                        {Array.from({ length: word.length }).map((_, colIndex) => {
-                          const letter = guess[colIndex] || '';
-                          const isLockedLetter = isActiveRow && colIndex in lockedLetters;
+                  return (
+                    <div key={boardRowIndex} className="flex flex-col items-center space-y-1">
+                      {displayRows.map((displayRow, displayRowIndex) => (
+                        <div
+                          key={displayRowIndex}
+                          className={`flex justify-center ${rowGapClass}`}
+                        >
+                          {displayRow.map((char, colIndex) => {
+                            const isDash = char === '-';
 
-                          const color = isSubmittedRow
-                            ? submittedRow.result[colIndex] === 'correct'
+                            if (isDash) {
+                              return (
+                                <div
+                                  key={`dash-${displayRowIndex}-${colIndex}`}
+                                  className={`flex items-center justify-center font-black text-white/70 ${tileClasses} border-0 bg-transparent shadow-none`}
+                                >
+                                  -
+                                </div>
+                              );
+                            }
+
+                            const globalIndex = getGlobalIndex(
+                              displayRowIndex,
+                              colIndex,
+                              isWrappedWord
+                            );
+
+                            const letter = guess[globalIndex] || '';
+                            const isLockedLetter =
+                              isActiveRow && globalIndex in lockedLetters;
+
+                            const color = isSubmittedRow
+                              ? submittedRow.result[globalIndex] === 'correct'
+                                ? 'bg-emerald-500 border-emerald-300 text-white'
+                                : submittedRow.result[globalIndex] === 'present'
+                                ? 'bg-yellow-300 border-yellow-200 text-slate-950'
+                                : 'bg-red-500 border-red-300 text-white'
+                              : isLockedLetter
                               ? 'bg-emerald-500 border-emerald-300 text-white'
-                              : submittedRow.result[colIndex] === 'present'
-                              ? 'bg-yellow-300 border-yellow-200 text-slate-950'
-                              : 'bg-red-500 border-red-300 text-white'
-                            : isLockedLetter
-                            ? 'bg-emerald-500 border-emerald-300 text-white'
-                            : 'bg-white/10 border-white/10 text-white';
+                              : 'bg-white/10 border-white/10 text-white';
 
-                          return (
-                            <div
-                              key={colIndex}
-                              className={`flex items-center justify-center border-2 font-black uppercase shadow-md transition-all duration-200 ${tileClasses} ${color}`}
-                            >
-                              {letter}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
+                            return (
+                              <div
+                                key={`${displayRowIndex}-${colIndex}`}
+                                className={`flex items-center justify-center border-2 font-black uppercase shadow-md transition-all duration-200 ${tileClasses} ${color}`}
+                              >
+                                {letter}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
                 </div>
               </div>
 
