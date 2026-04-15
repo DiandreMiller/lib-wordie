@@ -3,12 +3,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import HomePage from './Pages/HomePage';
 import GamePage from './Pages/GamePage';
-import './App.css'
 import FOUROFOUR from "./Pages/FOUROFOUR";
+import './App.css'
 
 // Todo:
 
-// Login streak, chem facts daily, seo, title, offline function
+// Login streak, chem facts daily, seo, title, offline function, footer, science logo
 
 function App() {
   return (
