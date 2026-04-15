@@ -9,7 +9,7 @@ import './App.css'
 
 // Todo:
 
-//  show facts even in loss, chem facts daily, seo, title, offline function, footer, twitter card, turn to an app
+//  show facts even in loss, chem facts daily, seo, title, offline function, footer, make sure app logo is correct
 
 // npm install react-confetti
 
