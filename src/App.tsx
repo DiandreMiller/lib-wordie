@@ -9,7 +9,7 @@ import './App.css'
 
 // Todo:
 
-// Login streak, chem facts daily, seo, title, offline function, footer, science logo
+//  chem facts daily, seo, title, offline function, footer, turn to an app
 
 function App() {
   return (
