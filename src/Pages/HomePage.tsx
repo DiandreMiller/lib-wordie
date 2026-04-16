@@ -1,12 +1,69 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { getDailyChemFact, hasSeenDailyChemFactToday, markDailyChemFactSeen } from '../utils/dailyChemFacts';
 import LibWordie from '../assets/images/LibChemCartoon.png';
 import LibChem from '../assets/images/LibChem.png';
 
 const HomePage = () => {
+  const [showDailyFactModal, setShowDailyFactModal] = useState(false);
+
+  useEffect(() => {
+    if (!hasSeenDailyChemFactToday()) {
+      setShowDailyFactModal(true);
+    }
+  },[]);
+
+
   const navigate = useNavigate();
+
+  const dailyFact = getDailyChemFact();
 
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] text-white">
+      {showDailyFactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="relative w-full max-w-xl rounded-[2rem] border border-cyan-300/20 bg-slate-900/95 p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-md sm:p-8">
+            <button
+              onClick={() => {
+                setShowDailyFactModal(false);
+                markDailyChemFactSeen();
+              }}
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/40 bg-white/10 text-xl font-bold text-white transition hover:scale-105 hover:bg-white/20"
+              aria-label="Close daily chem fact modal"
+            >
+              ×
+            </button>
+
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200">
+              Daily Chem Fact
+            </p>
+
+            <h2 className="mt-3 text-3xl font-black text-white">
+              {dailyFact.word.charAt(0).toUpperCase() + dailyFact.word.slice(1)}
+            </h2>
+
+            <p className="mt-2 text-sm uppercase tracking-[0.2em] text-slate-300">
+              Symbol: {dailyFact.symbol} • Atomic Number: {dailyFact.atomicNumber}
+            </p>
+
+            <div className="mt-6 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+              <p className="text-base leading-7 text-slate-200">
+                {dailyFact.fact}
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowDailyFactModal(false);
+                markDailyChemFactSeen();
+              }}
+              className="mt-6 h-12 rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-6 text-lg font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-cyan-200"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-6rem] top-10 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="absolute right-[-4rem] top-0 h-96 w-96 rounded-full bg-fuchsia-500/15 blur-3xl" />
@@ -58,12 +115,19 @@ const HomePage = () => {
                 Starting with chemistry, expanding into even more subjects later.
               </p>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <button
                   onClick={() => navigate('/play')}
                   className="rounded-[1.25rem] border border-cyan-300 bg-cyan-300 px-8 py-4 text-lg font-black text-slate-950 shadow-[0_12px_30px_rgba(0,0,0,0.25)] transition hover:scale-[1.03] hover:bg-cyan-200 active:scale-[0.98]"
                 >
                   Enter Chem Lab
+                </button>
+
+                <button
+                  onClick={() => setShowDailyFactModal(true)}
+                  className="rounded-[1.25rem] border border-fuchsia-300/40 bg-fuchsia-400/10 px-8 py-4 text-lg font-bold text-white shadow-lg backdrop-blur-sm transition hover:scale-[1.03] hover:bg-fuchsia-400/20 active:scale-[0.98]"
+                >
+                  Today’s Fact
                 </button>
 
                 <button
