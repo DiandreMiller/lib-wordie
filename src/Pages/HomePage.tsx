@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getDailyChemFact, hasSeenDailyChemFactToday, markDailyChemFactSeen } from '../utils/dailyChemFacts';
 import LibWordie from '../assets/images/LibChemCartoon.png';
-import LibChem from '../assets/images/LibChem.png';
+import LibChem from '../assets/images/LibWordieLogo.png';
 
 const HomePage = () => {
   const [showDailyFactModal, setShowDailyFactModal] = useState(false);
@@ -74,7 +74,7 @@ const HomePage = () => {
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-8 flex items-center justify-between rounded-full border border-white/15 bg-white/10 px-5 py-4 shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <img className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-cyan-300 bg-slate-900 text-lg font-black text-cyan-200 shadow-md"
+            <img className="flex h-15 w-15 items-center justify-center rounded-full border-2 border-cyan-300 bg-slate-900 text-lg font-black text-cyan-200 shadow-md"
               src={LibChem}
              />
 
