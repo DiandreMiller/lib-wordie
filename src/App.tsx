@@ -9,8 +9,9 @@ import './App.css'
 
 // Todo:
 
-// chem facts daily, seo, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
-
+// seo: JSON, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
+// Further goals:
+// stats after a week, month, year
 function App() {
   return (
     <div>
