@@ -6,6 +6,7 @@ import { updateDailySolveStreak } from '../utils/dailySolveStreak';
 import DailySolveStreak from '../components/DailySolveStreak';
 import { saveAnsweredElement, getAnsweredElements, clearAnsweredElements } from '../utils/answerHistory';
 import Quiz from '../components/Quiz';
+import MusicPlayer from '../components/MusicPlayer';
 import Confetti from 'react-confetti';
 
 const MAX_GUESSES = 6;
@@ -842,6 +843,9 @@ if (showQuiz) {
               </div>
             </div>
           </div>
+        </div>
+          <div className="mt-8 flex justify-center">
+          <MusicPlayer />
         </div>
       </div>
     </div>
