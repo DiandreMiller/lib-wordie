@@ -623,11 +623,11 @@ if (showQuiz) {
 
               {status === 'win' && elementData && (
                 <div
-                    className={`mt-8 w-full max-w-xl rounded-[1.75rem] border border-emerald-300/40 bg-emerald-500/15 px-6 py-5 text-center shadow-lg transition-all duration-500 ${
-                      isPerfectGame
+                  className={`mt-8 w-full max-w-xl rounded-[1.75rem] border border-emerald-300/40 bg-emerald-500/15 px-6 py-5 text-center shadow-lg transition-all duration-500 ease-out ${
+                    isPerfectGame
                       ? 'ring-2 ring-yellow-300/60 shadow-[0_0_25px_rgba(253,224,71,0.4)] scale-[1.02]'
                       : ''
-                    }`}
+                  }`}
                 >
                   <p className="text-3xl font-black text-emerald-200">
                     Reaction Complete!
