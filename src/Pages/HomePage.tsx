@@ -114,6 +114,7 @@ const HomePage = () => {
                 terms, learn through clues, and build confidence one puzzle at a time.
                 Starting with chemistry, expanding into even more subjects later.
               </p>
+              
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <button
