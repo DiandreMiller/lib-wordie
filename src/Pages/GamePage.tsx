@@ -6,7 +6,7 @@ import { updateDailySolveStreak } from '../utils/dailySolveStreak';
 import DailySolveStreak from '../components/DailySolveStreak';
 import { saveAnsweredElement, getAnsweredElements, clearAnsweredElements } from '../utils/answerHistory';
 import Quiz from '../components/Quiz';
-// import Confetti from 'react-confetti';
+import Confetti from 'react-confetti';
 
 const MAX_GUESSES = 6;
 const HOW_TO_PLAY_STORAGE_KEY = 'libwordie-hide-how-to-play-v1';
@@ -46,8 +46,10 @@ const GamePage = () => {
   const [submittedRows, setSubmittedRows] = useState<SubmittedRow[]>([]);
   const [showMore, setShowMore] = useState<boolean>(false);
   const [solveStreakRefreshKey, setSolveStreakRefreshKey] = useState(0);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizReady, setQuizReady] = useState(false);
+  const [showQuiz, setShowQuiz] = useState<boolean>(false);
+  const [quizReady, setQuizReady] = useState<boolean>(false);
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [isPerfectGame, setIsPerfectGame] = useState(false);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -88,6 +90,17 @@ const GamePage = () => {
   }, []);
 
   console.log('word:', word);
+
+  //Show confetti on win
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 3000); 
+  
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
 
   const focusGameInput = () => {
     boardRef.current?.focus();
@@ -182,7 +195,10 @@ const GamePage = () => {
       };
     
       saveStats(updatedStats);
+      const isPerfectGame = newSubmittedRows.length === 1;
+      setIsPerfectGame(isPerfectGame);
       setStatus('win');
+      setShowConfetti(true);
       saveAnsweredElement(word, true);
       maybeUnlockQuiz();
       return;
@@ -224,6 +240,7 @@ const GamePage = () => {
     setSubmittedRows([]);
     setShowMore(false);
     setQuizReady(false);
+    setShowConfetti(false);
     setTimeout(() => focusGameInput(), 0);
   };
 
@@ -360,6 +377,27 @@ if (showQuiz) {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={
+            isPerfectGame
+              ? 800
+              : stats.streak >= 5
+              ? 600
+              : 300
+          }
+          gravity={
+            isPerfectGame
+              ? 0.35
+              : stats.streak >= 5
+              ? 0.3
+              : 0.2
+          }
+        />
+      )}
       <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-40">
         <DailySolveStreak refreshKey={solveStreakRefreshKey} />
       </div>
@@ -587,6 +625,11 @@ if (showQuiz) {
                   <p className="text-3xl font-black text-emerald-200">
                     Reaction Complete!
                   </p>
+                  {isPerfectGame && (
+                    <p className="mt-2 text-lg font-bold text-yellow-300">
+                      Perfect Reaction ⚡ First Try!
+                    </p>
+                  )}
                   <p className="mt-2 text-base text-slate-100">
                     Nice work. You guessed{' '}
                     <span className="font-black uppercase text-white">{word}</span>.
