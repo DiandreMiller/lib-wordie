@@ -627,7 +627,7 @@ if (showQuiz) {
                     Reaction Complete!
                   </p>
                   {isPerfectGame && (
-                    <p className="mt-2 text-lg font-bold text-yellow-300">
+                    <p className="mt-2 animate-[perfectPop_500ms_ease-out] text-lg font-bold text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.45)]">
                       Perfect Reaction ⚡ First Try!
                     </p>
                   )}

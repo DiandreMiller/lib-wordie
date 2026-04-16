@@ -9,9 +9,7 @@ import './App.css'
 
 // Todo:
 
-// add music, chem facts daily, seo, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
-
-// npm install react-confetti
+// chem facts daily, seo, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
 
 function App() {
   return (
