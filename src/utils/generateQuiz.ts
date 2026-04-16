@@ -73,23 +73,49 @@ const createAtomicNumberQuestion = (word: string): QuizQuestion => {
   };
 };
 
-const createUseQuestion = (word: string): QuizQuestion => {
-  const element = ELEMENT_DETAILS[word];
-  const correctUse = element.uses[0];
-
-  const wrongChoices = getOtherWords(word, 3).map((wrongWord) => {
-    const wrongUses = ELEMENT_DETAILS[wrongWord].uses;
-    return wrongUses[0];
-  });
-
-  return {
-    prompt: `Which of these is a common use of ${capitalize(word)}?`,
-    choices: shuffle([correctUse, ...wrongChoices]),
-    correctAnswer: correctUse,
-    questionType: 'use',
-    elementWord: word,
+const getRandomItem = <T,>(items: T[]): T => {
+    return items[Math.floor(Math.random() * items.length)];
   };
-};
+  
+  const createUseQuestion = (word: string): QuizQuestion => {
+    const element = ELEMENT_DETAILS[word];
+    const nonGenericUses = element.uses.filter(
+        (use) => use !== 'Research'
+    );
+    
+    const correctUse = getRandomItem(
+        nonGenericUses.length ? nonGenericUses : element.uses
+    );
+  
+    const wrongChoicesSet = new Set<string>();
+  
+    const otherWords = shuffle(
+      Object.keys(ELEMENT_DETAILS).filter((w) => w !== word)
+    );
+  
+    for (const wrongWord of otherWords) {
+      const wrongUses = ELEMENT_DETAILS[wrongWord].uses;
+      const randomWrongUse = getRandomItem(wrongUses);
+  
+      if (randomWrongUse !== correctUse) {
+        wrongChoicesSet.add(randomWrongUse);
+      }
+  
+      if (wrongChoicesSet.size === 3) {
+        break;
+      }
+    }
+  
+    const choices = shuffle([correctUse, ...Array.from(wrongChoicesSet)]);
+  
+    return {
+      prompt: `Which of these is a common use of ${capitalize(word)}?`,
+      choices,
+      correctAnswer: correctUse,
+      questionType: 'use',
+      elementWord: word,
+    };
+  };
 
 const createFunFactQuestion = (word: string): QuizQuestion => {
   const element = ELEMENT_DETAILS[word];
