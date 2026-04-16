@@ -480,7 +480,7 @@ if (showQuiz) {
 
           <button
             onClick={handleOpenHowToPlayModal}
-            className="mt-1 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/40 bg-white/10 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-white/20"
+            className="mt-1 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/40 bg-white/10 text-lg font-black text-white shadow-lg transition hover:scale-105 hover:bg-white/20 ml-3"
             aria-label="Open how to play modal"
             title="How to play"
           >
