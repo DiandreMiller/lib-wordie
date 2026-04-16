@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import LibWordie from '../assets/images/LibChemCartoon.png';
 import { PERIODIC_TABLE_ELEMENTS } from '../assets/data/periodicTableElements';
 import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
@@ -469,9 +470,9 @@ if (showQuiz) {
 
       <div className="relative mx-auto max-w-6xl">
         <div className="mb-6 flex items-center justify-center gap-3 sm:mb-8">
-          <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <Link to='/'><h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
             Chem Lab
-          </h1>
+          </h1></Link>
 
           <button
             onClick={handleOpenHowToPlayModal}
