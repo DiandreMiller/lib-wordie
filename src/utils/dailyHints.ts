@@ -8,7 +8,7 @@ type DailyHintsState = {
 // Format: YYYY-MM-DD
 const getTodayKey = () => {
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  return today.toLocaleDateString('en-CA')
 };
 
 const getDefaultState = (): DailyHintsState => ({
@@ -16,7 +16,10 @@ const getDefaultState = (): DailyHintsState => ({
   lastResetDate: getTodayKey(),
 });
 
+
+
 export const getDailyHintsState = (): DailyHintsState => {
+    
   const raw = localStorage.getItem(DAILY_HINTS_KEY);
 
   if (!raw) {
@@ -42,6 +45,7 @@ export const getDailyHintsState = (): DailyHintsState => {
     localStorage.setItem(DAILY_HINTS_KEY, JSON.stringify(fresh));
     return fresh;
   }
+  
 };
 
 export const useOneDailyHint = (): DailyHintsState | null => {
