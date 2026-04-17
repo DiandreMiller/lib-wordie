@@ -102,6 +102,31 @@ const GamePage = () => {
 
   console.log('word:', word);
 
+  useEffect(() => {
+    const refreshHints = () => {
+      const hintState = getDailyHintsState();
+      setDailyHintsRemaining(hintState.remaining);
+    };
+  
+    // Run once on mount
+    refreshHints();
+  
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshHints();
+      }
+    };
+  
+    window.addEventListener('focus', refreshHints);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+    return () => {
+      window.removeEventListener('focus', refreshHints);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+  
+
   //Show confetti on win
   useEffect(() => {
     if (showConfetti) {
