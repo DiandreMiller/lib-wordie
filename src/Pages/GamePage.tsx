@@ -56,7 +56,7 @@ const GamePage = () => {
   const [isPerfectGame, setIsPerfectGame] = useState(false);
   const [dailyHintsRemaining, setDailyHintsRemaining] = useState(3);
   const [usedHintIndexes, setUsedHintIndexes] = useState<number[]>([]);
-  const [_usedHintTypes, setUsedHintTypes] = useState<string[]>([]);
+  const [usedHintTypes, setUsedHintTypes] = useState<string[]>([]);
   const [activeHintMessage, setActiveHintMessage] = useState('');
 
 
@@ -392,31 +392,81 @@ const handleUseHint = () => {
   if (status !== 'playing') return;
   if (dailyHintsRemaining <= 0) return;
 
-  const availableIndexes = Array.from({ length: word.length }, (_, i) => i).filter(
+  const elementDataForHint = ELEMENT_DETAILS[word];
+  if (!elementDataForHint) return;
+
+  const availableHintTypes: string[] = [];
+
+  const unrevealedIndexes = Array.from({ length: word.length }, (_, i) => i).filter(
     (index) => !(index in lockedLetters) && !usedHintIndexes.includes(index)
   );
 
-  if (availableIndexes.length === 0) return;
+  if (unrevealedIndexes.length > 0 && !usedHintTypes.includes('letter')) {
+    availableHintTypes.push('letter');
+  }
+
+  if (!usedHintTypes.includes('symbol')) {
+    availableHintTypes.push('symbol');
+  }
+
+  if (!usedHintTypes.includes('atomicNumber')) {
+    availableHintTypes.push('atomicNumber');
+  }
+
+  if (!usedHintTypes.includes('fact')) {
+    availableHintTypes.push('fact');
+  }
+
+  if (availableHintTypes.length === 0) return;
 
   const nextHintState = useOneDailyHint();
   if (!nextHintState) return;
 
-  const randomIndex =
-    availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+  const chosenHintType =
+    availableHintTypes[Math.floor(Math.random() * availableHintTypes.length)];
 
-  const revealedLetter = word[randomIndex];
+  if (chosenHintType === 'letter') {
+    const randomIndex =
+      unrevealedIndexes[Math.floor(Math.random() * unrevealedIndexes.length)];
 
-  const nextLockedLetters = {
-    ...lockedLetters,
-    [randomIndex]: revealedLetter,
-  };
+    const revealedLetter = word[randomIndex];
 
-  const nextGuess = [...currentGuess];
-  nextGuess[randomIndex] = revealedLetter;
+    const nextLockedLetters = {
+      ...lockedLetters,
+      [randomIndex]: revealedLetter,
+    };
 
-  setLockedLetters(nextLockedLetters);
-  setCurrentGuess(nextGuess);
-  setUsedHintIndexes((prev) => [...prev, randomIndex]);
+    const nextGuess = [...currentGuess];
+    nextGuess[randomIndex] = revealedLetter;
+
+    setLockedLetters(nextLockedLetters);
+    setCurrentGuess(nextGuess);
+    setUsedHintIndexes((prev) => [...prev, randomIndex]);
+    setActiveHintMessage(
+      `Hint: Letter ${randomIndex + 1} is "${revealedLetter.toUpperCase()}".`
+    );
+  }
+
+  if (chosenHintType === 'symbol') {
+    setActiveHintMessage(`Hint: The symbol is ${elementDataForHint.symbol}.`);
+  }
+
+  if (chosenHintType === 'atomicNumber') {
+    setActiveHintMessage(
+      `Hint: The atomic number is ${elementDataForHint.atomicNumber}.`
+    );
+  }
+
+  if (chosenHintType === 'fact') {
+    const factText =
+      elementDataForHint.shortFact ||
+      elementDataForHint.funFact ||
+      'No fact available for this element.';
+
+    setActiveHintMessage(`Hint: ${factText}`);
+  }
+
+  setUsedHintTypes((prev) => [...prev, chosenHintType]);
   setDailyHintsRemaining(nextHintState.remaining);
 };
 
