@@ -7,6 +7,7 @@ import { ELEMENT_DETAILS } from '../assets/data/elementDetails';
 import { updateDailySolveStreak } from '../utils/dailySolveStreak';
 import DailySolveStreak from '../components/DailySolveStreak';
 import { saveAnsweredElement, getAnsweredElements, clearAnsweredElements } from '../utils/answerHistory';
+import { getDailyHintsState, useOneDailyHint } from '../utils/dailyHints';
 import Quiz from '../components/Quiz';
 import MusicPlayer from '../components/MusicPlayer';
 import Confetti from 'react-confetti';
@@ -53,6 +54,11 @@ const GamePage = () => {
   const [quizReady, setQuizReady] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [isPerfectGame, setIsPerfectGame] = useState(false);
+  const [dailyHintsRemaining, setDailyHintsRemaining] = useState(3);
+  const [usedHintIndexes, setUsedHintIndexes] = useState<number[]>([]);
+  const [usedHintTypes, setUsedHintTypes] = useState<string[]>([]);
+  const [activeHintMessage, setActiveHintMessage] = useState('');
+
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -76,6 +82,8 @@ const GamePage = () => {
     setCurrentGuess(Array(generatedWord.length).fill(''));
     setSubmittedRows([]);
     setShowMore(false);
+    const hintState = getDailyHintsState();
+    setDailyHintsRemaining(hintState.remaining);
 
     const hasDismissedModal = localStorage.getItem(HOW_TO_PLAY_STORAGE_KEY);
     if (!hasDismissedModal) {
@@ -244,6 +252,8 @@ const GamePage = () => {
     setShowMore(false);
     setQuizReady(false);
     setShowConfetti(false);
+    setUsedHintTypes([]);
+    setActiveHintMessage('');
     setTimeout(() => focusGameInput(), 0);
   };
 
@@ -377,6 +387,38 @@ if (showQuiz) {
     </div>
   );
 }
+
+const handleUseHint = () => {
+  if (status !== 'playing') return;
+  if (dailyHintsRemaining <= 0) return;
+
+  const availableIndexes = Array.from({ length: word.length }, (_, i) => i).filter(
+    (index) => !(index in lockedLetters) && !usedHintIndexes.includes(index)
+  );
+
+  if (availableIndexes.length === 0) return;
+
+  const nextHintState = useOneDailyHint();
+  if (!nextHintState) return;
+
+  const randomIndex =
+    availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+
+  const revealedLetter = word[randomIndex];
+
+  const nextLockedLetters = {
+    ...lockedLetters,
+    [randomIndex]: revealedLetter,
+  };
+
+  const nextGuess = [...currentGuess];
+  nextGuess[randomIndex] = revealedLetter;
+
+  setLockedLetters(nextLockedLetters);
+  setCurrentGuess(nextGuess);
+  setUsedHintIndexes((prev) => [...prev, randomIndex]);
+  setDailyHintsRemaining(nextHintState.remaining);
+};
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#1e3a5f_0%,_#0f172a_45%,_#020617_100%)] px-4 py-8 text-white sm:py-10">
@@ -513,6 +555,37 @@ if (showQuiz) {
 
               <div className="mt-3 border-b border-white/10" />
             </div>
+
+            <div className="mb-5 rounded-[1.5rem] border border-cyan-300/20 bg-slate-900/35 p-4">
+  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-200">
+        Daily Hints
+      </p>
+      <p className="mt-1 text-sm text-slate-300">
+        {dailyHintsRemaining} of 3 remaining today
+      </p>
+    </div>
+
+    <button
+      onClick={handleUseHint}
+      disabled={status !== 'playing' || dailyHintsRemaining <= 0}
+      className={`rounded-[1rem] px-5 py-3 text-sm font-black uppercase tracking-[0.15em] transition ${
+        status === 'playing' && dailyHintsRemaining > 0
+          ? 'border border-fuchsia-300/50 bg-fuchsia-400/15 text-white hover:scale-[1.03] hover:bg-fuchsia-400/25'
+          : 'cursor-not-allowed border border-slate-700 bg-slate-800 text-slate-500'
+      }`}
+    >
+      Use Hint
+    </button>
+  </div>
+
+  {activeHintMessage && (
+    <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 p-4">
+      <p className="text-sm leading-6 text-cyan-100">{activeHintMessage}</p>
+    </div>
+  )}
+</div>
 
             <div
               ref={boardRef}

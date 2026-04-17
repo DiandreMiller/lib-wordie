@@ -9,9 +9,12 @@ import './App.css'
 
 // Todo:
 
-// seo: JSON, title, offline function, footer, add badges when you get 5, 10, 25, 50, 100 etc in a row
+// fix route paths, fuzzy js for routes and regex, seo: JSON, title, offline function, footer, hints 5 per day max
 // Further goals:
 // stats after a week, month, year
+//add badges when you get 5, 10, 25, 50, 100 etc in a row
+// add friends
+
 function App() {
   return (
     <div>
