@@ -56,7 +56,7 @@ const GamePage = () => {
   const [isPerfectGame, setIsPerfectGame] = useState(false);
   const [dailyHintsRemaining, setDailyHintsRemaining] = useState(3);
   const [usedHintIndexes, setUsedHintIndexes] = useState<number[]>([]);
-  const [usedHintTypes, setUsedHintTypes] = useState<string[]>([]);
+  const [_usedHintTypes, setUsedHintTypes] = useState<string[]>([]);
   const [activeHintMessage, setActiveHintMessage] = useState('');
 
 
