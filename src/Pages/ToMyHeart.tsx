@@ -94,11 +94,19 @@ const ToMyHeart = () => {
   currentSentenceIndex === SENTENCES.length - 1 && !isTyping;
 
   useEffect(() => {
-    if (isLetterFinished && !isCountingDown && countdown === null) {
-      setIsCountingDown(true);
-      setCountdown(3);
+    if (
+      currentSentenceIndex === SENTENCES.length - 1 &&
+      !isCountingDown &&
+      countdown === null
+    ) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+      setTimeout(() => {
+        setIsCountingDown(true);
+        setCountdown(3);
+      }, 1200);
     }
-  }, [isLetterFinished, countdown, isCountingDown]);
+  }, [isLetterFinished, countdown, isCountingDown, currentSentenceIndex]);
 
   useEffect(() => {
     if (!isCountingDown || countdown === null) return;
@@ -117,20 +125,26 @@ const ToMyHeart = () => {
     }
   
     if (countdown === 0) {
+      setSongStarted(true);
+      setShowHeartBurst(true);
+  
       if (birthdayAudioRef.current) {
         birthdayAudioRef.current.currentTime = 0;
         birthdayAudioRef.current.play().catch(() => {});
       }
   
-      setSongStarted(true);
-      setShowHeartBurst(true);
-      setIsCountingDown(false);
-  
       const burstTimer = setTimeout(() => {
         setShowHeartBurst(false);
       }, 1800);
   
-      return () => clearTimeout(burstTimer);
+      const finishTimer = setTimeout(() => {
+        setIsCountingDown(false);
+      }, 50);
+  
+      return () => {
+        clearTimeout(burstTimer);
+        clearTimeout(finishTimer);
+      };
     }
   }, [countdown, isCountingDown]);
 
