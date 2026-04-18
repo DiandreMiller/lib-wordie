@@ -4,7 +4,7 @@ import LibbyAndDreAnniversary from '../assets/images/LibbyDreAnniversary.jpeg';
 
 const SENTENCES = [
   'I am grateful and happy to spend another year with you as we grow older together.',
-  'I’m grateful I met you and I love everything about you, your warm inviting personality, your kind and amazing heart,',
+  'I’m grateful I met you and I love everything about you, your warm inviting personality, your kind and amazing heart, your show-stopping smile, your gorgeous brown skin',
   'your bright bodacious brain, your beautiful voice, your sexy curves, your gorgeous amazing and powerful hair, your lucious lips, all that movement back there… and even your strong ass brolic fingers.',
   'I’m grateful to have you as my girlfriend, and I can’t wait until you are even more in the future.',
   'Even if this birthday isn’t everything you want yet, one day it will be.',
