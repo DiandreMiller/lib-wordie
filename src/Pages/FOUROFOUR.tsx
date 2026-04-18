@@ -43,6 +43,13 @@ const FOUROFOUR = () => {
               >
                 Go to Game
               </Link>
+
+              <Link
+                to="/tomyheart"
+                className="inline-flex items-center justify-center rounded-[1.25rem] border border-fuchsia-300/40 bg-fuchsia-400/10 px-8 py-4 text-lg font-bold text-white shadow-lg backdrop-blur-sm transition hover:scale-[1.03] hover:bg-fuchsia-400/20 active:scale-[0.98]"
+              >
+                To My Heart
+              </Link>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
