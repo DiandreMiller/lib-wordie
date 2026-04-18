@@ -130,20 +130,28 @@ const ToMyHeart = () => {
             Happy Birthday Baby Girl!
           </h1>
 
-          <div
-            className={`mt-6 overflow-hidden rounded-[1.5rem] border shadow-lg transition-all duration-700 ease-out ${
-              isLetterFinished
-                ? 'border-yellow-300/60 shadow-[0_0_35px_rgba(253,224,71,0.35)] ring-2 ring-yellow-300/30'
-                : 'border-white/10'
-            }`}
-          >
-            <img
-              src={LibbyAndDreAnniversary}
-              alt="Libya and Dre"
-              className={`w-full object-cover transition-all duration-700 ease-out ${
-                isLetterFinished ? 'scale-[1.01] brightness-110' : ''
+          <div className="relative mt-6">
+            <div
+              className={`pointer-events-none absolute inset-0 rounded-[1.5rem] ${
+                isLetterFinished ? 'animate-photo-glow' : ''
               }`}
             />
+
+            <div
+              className={`relative overflow-hidden rounded-[1.5rem] border shadow-lg transition-all duration-700 ease-out ${
+                isLetterFinished
+                  ? 'border-yellow-300/70 ring-2 ring-yellow-300/30'
+                  : 'border-white/10'
+              }`}
+            >
+              <img
+                src={LibbyAndDreAnniversary}
+                alt="Libya and Dre"
+                className={`w-full object-cover transition-all duration-700 ease-out ${
+                  isLetterFinished ? 'scale-[1.01] brightness-110' : ''
+                }`}
+              />
+            </div>
           </div>
 
           <div
@@ -228,6 +236,37 @@ const ToMyHeart = () => {
 
           .animate-heart-chaos {
             animation: heartChaos infinite ease-in-out;
+          }
+
+          @keyframes photoGlow {
+            0% {
+              box-shadow:
+                0 0 18px rgba(253, 224, 71, 0.28),
+                0 0 38px rgba(253, 224, 71, 0.18),
+                0 0 70px rgba(253, 224, 71, 0.10);
+              opacity: 0.85;
+              transform: scale(1);
+            }
+            50% {
+              box-shadow:
+                0 0 26px rgba(253, 224, 71, 0.48),
+                0 0 54px rgba(253, 224, 71, 0.28),
+                0 0 95px rgba(253, 224, 71, 0.16);
+              opacity: 1;
+              transform: scale(1.01);
+            }
+            100% {
+              box-shadow:
+                0 0 18px rgba(253, 224, 71, 0.28),
+                0 0 38px rgba(253, 224, 71, 0.18),
+                0 0 70px rgba(253, 224, 71, 0.10);
+              opacity: 0.85;
+              transform: scale(1);
+            }
+          }
+
+          .animate-photo-glow {
+            animation: photoGlow 2.2s infinite ease-in-out;
           }
         `}
       </style>
