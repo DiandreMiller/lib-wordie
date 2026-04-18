@@ -27,6 +27,7 @@ const ToMyHeart = () => {
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [songStarted, setSongStarted] = useState(false);
+  const countdownTargetRef = useRef<HTMLDivElement | null>(null);
   const [hearts] = useState(
     [...Array(25)].map((_, i) => {
       const rand = Math.random();
@@ -99,7 +100,11 @@ const ToMyHeart = () => {
       !isCountingDown &&
       countdown === null
     ) {
-      window.scrollTo({ top: 1, behavior: 'smooth' });
+      
+      countdownTargetRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     
       setTimeout(() => {
         setIsCountingDown(true);
@@ -197,7 +202,7 @@ const ToMyHeart = () => {
             Happy Birthday Baby Girl!
           </h1>
 
-          <div className="relative mt-6">
+          <div ref={countdownTargetRef} className="relative mt-6">
             <div
               className={`pointer-events-none absolute inset-0 rounded-[1.5rem] ${
                 songStarted
