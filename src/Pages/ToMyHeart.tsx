@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LibbyAndDreAnniversary from '../assets/images/LibbyDreAnniversary.jpeg';
+import HappyBirthday from '../assets/audio/HappyBirthday.mp3'
 
 const SENTENCES = [
   'I am grateful and happy to spend another year with you as we grow older together.',
@@ -22,6 +23,8 @@ const ToMyHeart = () => {
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [isCountingDown, setIsCountingDown] = useState(false);
   const [hearts] = useState(
     [...Array(25)].map((_, i) => {
       const rand = Math.random();
@@ -41,6 +44,10 @@ const ToMyHeart = () => {
         size: `${1.2 + Math.random() * 1.4}rem`,
       };
     })
+  );
+  const birthdayAudio = new Audio(HappyBirthday);
+  const beepAudio = new Audio(
+    'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'
   );
 
   useEffect(() => {
@@ -70,6 +77,7 @@ const ToMyHeart = () => {
     };
   }, [currentSentenceIndex]);
 
+
   const handleNextSentence = () => {
     if (isTyping) return;
 
@@ -80,6 +88,34 @@ const ToMyHeart = () => {
 
   const isLetterFinished =
   currentSentenceIndex === SENTENCES.length - 1 && !isTyping;
+
+  useEffect(() => {
+    if (isLetterFinished && !isCountingDown && countdown === null) {
+      setIsCountingDown(true);
+      setCountdown(3);
+    }
+  }, [isLetterFinished, countdown, isCountingDown]);
+
+  useEffect(() => {
+    if (!isCountingDown || countdown === null) return;
+  
+    if (countdown > 0) {
+      beepAudio.currentTime = 0;
+      beepAudio.play();
+  
+      const timer = setTimeout(() => {
+        setCountdown((prev) => (prev ? prev - 1 : 0));
+      }, 1000);
+  
+      return () => clearTimeout(timer);
+    }
+  
+    // When countdown hits 0 → play song
+    if (countdown === 0) {
+      birthdayAudio.play();
+      setIsCountingDown(false);
+    }
+  }, [countdown, isCountingDown, beepAudio, birthdayAudio]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#3b163f_0%,_#1f102b_45%,_#09040f_100%)] px-4 py-10 text-white">
@@ -144,6 +180,13 @@ const ToMyHeart = () => {
                   : 'border-white/10'
               }`}
             >
+              {isCountingDown && countdown !== null && countdown > 0 && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center">
+                  <span className="animate-countdown text-[120px] sm:text-[160px] font-black text-yellow-300 drop-shadow-[0_0_30px_rgba(253,224,71,0.8)]">
+                    {countdown}
+                  </span>
+                </div>
+              )}
               <img
                 src={LibbyAndDreAnniversary}
                 alt="Libya and Dre"
@@ -268,6 +311,27 @@ const ToMyHeart = () => {
           .animate-photo-glow {
             animation: photoGlow 2.2s infinite ease-in-out;
           }
+            @keyframes countdownPop {
+              0% {
+                transform: scale(0.5);
+                opacity: 0;
+              }
+              40% {
+                transform: scale(1.2);
+                opacity: 1;
+              }
+              70% {
+                transform: scale(0.95);
+              }
+              100% {
+                transform: scale(1);
+                opacity: 1;
+              }
+            }
+
+            .animate-countdown {
+              animation: countdownPop 0.6s ease-out;
+            }
         `}
       </style>
     </div>
