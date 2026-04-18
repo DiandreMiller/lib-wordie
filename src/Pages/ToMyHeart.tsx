@@ -99,7 +99,7 @@ const ToMyHeart = () => {
       !isCountingDown &&
       countdown === null
     ) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 1, behavior: 'smooth' });
     
       setTimeout(() => {
         setIsCountingDown(true);
