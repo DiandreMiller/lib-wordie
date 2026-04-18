@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import LibbyAndDreAnniversary from '../assets/images/LibbyDreAnniversary.jpeg';
 import HappyBirthday from '../assets/audio/HappyBirthday.mp3'
@@ -6,7 +6,7 @@ import HappyBirthday from '../assets/audio/HappyBirthday.mp3'
 const SENTENCES = [
   'I am grateful and happy to spend another year with you as we grow older together.',
   'I’m grateful I met you and I love everything about you, your warm inviting personality, your kind and amazing heart, your show-stopping smile, your gorgeous brown skin',
-  'your bright bodacious brain, your beautiful voice, your sexy curves, your gorgeous amazing and powerful hair, your lucious lips, all that movement back there… and even your strong ass brolic fingers.',
+  'your bright bodacious brain, your beautiful voice, your sexy curves, your gorgeous amazing and powerful hair, your lucious lips, all that movement back there… and even your strong ass brolic fingers, and vicous nails.',
   'I’m grateful to have you as my girlfriend, and I can’t wait until you are even more in the future.',
   'Even if this birthday isn’t everything you want yet, one day it will be.',
   'I’m going to make sure of that.',
@@ -25,6 +25,8 @@ const ToMyHeart = () => {
   const [isTyping, setIsTyping] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
+  const [songStarted, setSongStarted] = useState(false);
   const [hearts] = useState(
     [...Array(25)].map((_, i) => {
       const rand = Math.random();
@@ -45,10 +47,12 @@ const ToMyHeart = () => {
       };
     })
   );
-  const birthdayAudio = new Audio(HappyBirthday);
-  const beepAudio = new Audio(
-    'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'
-  );
+  const birthdayAudioRef = useRef<HTMLAudioElement | null>(null);
+  const beepAudioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    birthdayAudioRef.current = new Audio(HappyBirthday);
+    beepAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+  }, []);
 
   useEffect(() => {
     let index = 0;
@@ -100,8 +104,10 @@ const ToMyHeart = () => {
     if (!isCountingDown || countdown === null) return;
   
     if (countdown > 0) {
-      beepAudio.currentTime = 0;
-      beepAudio.play();
+      if (beepAudioRef.current) {
+        beepAudioRef.current.currentTime = 0;
+        beepAudioRef.current.play().catch(() => {});
+      }
   
       const timer = setTimeout(() => {
         setCountdown((prev) => (prev ? prev - 1 : 0));
@@ -110,12 +116,23 @@ const ToMyHeart = () => {
       return () => clearTimeout(timer);
     }
   
-    // When countdown hits 0 → play song
     if (countdown === 0) {
-      birthdayAudio.play();
+      if (birthdayAudioRef.current) {
+        birthdayAudioRef.current.currentTime = 0;
+        birthdayAudioRef.current.play().catch(() => {});
+      }
+  
+      setSongStarted(true);
+      setShowHeartBurst(true);
       setIsCountingDown(false);
+  
+      const burstTimer = setTimeout(() => {
+        setShowHeartBurst(false);
+      }, 1800);
+  
+      return () => clearTimeout(burstTimer);
     }
-  }, [countdown, isCountingDown, beepAudio, birthdayAudio]);
+  }, [countdown, isCountingDown]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#3b163f_0%,_#1f102b_45%,_#09040f_100%)] px-4 py-10 text-white">
@@ -169,7 +186,11 @@ const ToMyHeart = () => {
           <div className="relative mt-6">
             <div
               className={`pointer-events-none absolute inset-0 rounded-[1.5rem] ${
-                isLetterFinished ? 'animate-photo-glow' : ''
+                songStarted
+                  ? 'animate-photo-glow-strong'
+                  : isLetterFinished
+                  ? 'animate-photo-glow'
+                  : ''
               }`}
             />
 
@@ -187,6 +208,22 @@ const ToMyHeart = () => {
                   </span>
                 </div>
               )}
+              {showHeartBurst && (
+                <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-[1.5rem]">
+                  {[...Array(18)].map((_, i) => (
+                    <span
+                      key={i}
+                      className="absolute left-1/2 top-1/2 animate-heart-burst text-3xl text-yellow-300"
+                      style={{
+                        transform: `translate(-50%, -50%) rotate(${i * 20}deg)`,
+                        animationDelay: `${i * 0.03}s`,
+                      }}
+                    >
+                      💛
+                    </span>
+                  ))}
+                </div>
+              )}
               <img
                 src={LibbyAndDreAnniversary}
                 alt="Libya and Dre"
@@ -194,6 +231,16 @@ const ToMyHeart = () => {
                   isLetterFinished ? 'scale-[1.01] brightness-110' : ''
                 }`}
               />
+              {songStarted && (
+                <div className="mt-4 rounded-[1rem] border border-yellow-300/30 bg-yellow-300/10 px-4 py-3 text-center shadow-lg">
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-200">
+                    For You 💛
+                  </p>
+                  <p className="mt-1 text-base text-white">
+                    Happy Birthday, Baby Girl
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -332,6 +379,55 @@ const ToMyHeart = () => {
             .animate-countdown {
               animation: countdownPop 0.6s ease-out;
             }
+              @keyframes photoGlowStrong {
+            0% {
+              box-shadow:
+                0 0 30px rgba(253, 224, 71, 0.45),
+                0 0 65px rgba(253, 224, 71, 0.28),
+                0 0 110px rgba(253, 224, 71, 0.18);
+              opacity: 0.9;
+              transform: scale(1);
+            }
+            50% {
+              box-shadow:
+                0 0 42px rgba(253, 224, 71, 0.75),
+                0 0 90px rgba(253, 224, 71, 0.45),
+                0 0 145px rgba(253, 224, 71, 0.24);
+              opacity: 1;
+              transform: scale(1.015);
+            }
+            100% {
+              box-shadow:
+                0 0 30px rgba(253, 224, 71, 0.45),
+                0 0 65px rgba(253, 224, 71, 0.28),
+                0 0 110px rgba(253, 224, 71, 0.18);
+              opacity: 0.9;
+              transform: scale(1);
+            }
+          }
+
+          .animate-photo-glow-strong {
+            animation: photoGlowStrong 1.8s infinite ease-in-out;
+          }
+
+          @keyframes heartBurst {
+            0% {
+              opacity: 0;
+              transform: translate(-50%, -50%) scale(0.4);
+            }
+            20% {
+              opacity: 1;
+              transform: translate(-50%, -50%) scale(1.15);
+            }
+            100% {
+              opacity: 0;
+              transform: translate(-50%, -50%) translateY(-140px) scale(0.8);
+            }
+          }
+
+          .animate-heart-burst {
+            animation: heartBurst 1.2s ease-out forwards;
+          }
         `}
       </style>
     </div>
