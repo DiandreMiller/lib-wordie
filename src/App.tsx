@@ -35,7 +35,7 @@ import './App.css'
 //   if(hardRedirect) {
 //     return hardRedirect;
 //   }
-// }
+// };
 
 
 function App() {
