@@ -11,7 +11,8 @@ import './App.css'
 // Todo:
 
 // fix route paths, fuzzy js for routes and regex, seo: JSON, title, offline function, footer, 
-// beginner, medium, hard check out other word games..
+// beginner, medium, hard check out other word games...
+// Give clues 
 // Further goals:
 // create backend
 // stats after a week, month, year
