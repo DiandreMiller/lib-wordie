@@ -15,6 +15,7 @@ import './App.css'
 // Give clues 
 // Further goals:
 // create backend
+// finish redirect
 // stats after a week, month, year
 //add badges when you get 5, 10, 25, 50, 100 etc in a row
 // add friends
