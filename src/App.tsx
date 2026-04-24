@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 
 import HomePage from './Pages/HomePage';
@@ -7,6 +7,8 @@ import ToMyHeart from "./Pages/ToMyHeart";
 import FOUROFOUR from "./Pages/FOUROFOUR";
 // import GamePageTest from "./Pages/GamePlayTest";
 import './App.css'
+
+import Fuse from "fuse.js";
 
 // Todo:
 
@@ -21,25 +23,46 @@ import './App.css'
 // add friends
 
 // Catch-all near routes
-// function AliasRouter() {
-//   const { pathname } = useLocation();
+function AliasRouter() {
+  const { pathname } = useLocation();
 
-//   const redirectIf = (base: string, to: string) => {
-//       const re = new RegExp(`^/${base}[a-z0-9-]*$`, "i");
-//       return re.test(pathname) ? <Navigate to={`/${to}`} replace /> : null;
-//     };
+  const redirectIf = (base: string, to: string) => {
+      const re = new RegExp(`^/${base}[a-z0-9-]*$`, "i");
+      return re.test(pathname) ? <Navigate to={`/${to}`} replace /> : null;
+    };
 
-//   const hardRedirect = 
-//     redirectIf("cart", "cart") ||
-//     redirectIf("contactus", "contactus") ||
-//     redirectIf("emailsent", "emailsent") ||
-//     redirectIf("inventory", "inventory") ||
-//     redirectIf("meetjosh&jenna", "meetjosh&jenna");
+  const hardRedirect = 
+    redirectIf("play", "play") ||
+    redirectIf("tomyheart", "tomyheart") 
 
-//   if(hardRedirect) {
-//     return hardRedirect;
-//   }
-// };
+  if(hardRedirect) {
+    return hardRedirect;
+  }
+
+  const routeChoices = [
+    { path: "/", label: "Home" },
+    { path: "/play", label: "Play" },
+    { path: "/tomyheart", label: "To My Heart" },
+  ];
+
+  const fuse = new Fuse(routeChoices, {
+    keys: ['path', 'label'],
+    threshold: 0.35,
+    ignoreLocation: true,
+    includeScore: true,
+  });
+
+  const query = pathname.toLowerCase();
+  const result = fuse.search(query)[0]; // best match
+
+  console.log('result:', result);
+
+  if(result && result.score != null && result.score < 0.20) {
+    return <Navigate to={result.item.path} replace />;
+  }
+
+  return <FOUROFOUR />
+};
 
 
 function App() {
@@ -51,7 +74,7 @@ function App() {
           <Route element={<GamePage />} path='/play' />
           <Route element={<ToMyHeart />} path='/tomyheart' />
           {/* <Route element={<GamePageTest />} path='/test' /> */}
-          <Route element={<FOUROFOUR />} path='*' />
+          <Route element={<AliasRouter />} path="*" />
         </Routes>
       </BrowserRouter>
     </div>
