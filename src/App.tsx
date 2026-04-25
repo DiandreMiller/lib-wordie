@@ -5,6 +5,7 @@ import HomePage from './Pages/HomePage';
 import GamePage from './Pages/GamePage';
 import ToMyHeart from "./Pages/ToMyHeart";
 import FOUROFOUR from "./Pages/FOUROFOUR";
+import ContactPage from "./Pages/ContactPage";
 // import GamePageTest from "./Pages/GamePlayTest";
 import './App.css'
 
@@ -33,6 +34,7 @@ function AliasRouter() {
 
   const hardRedirect = 
     redirectIf("play", "play") ||
+    redirectIf("contactus", "contactus") ||
     redirectIf("tomyheart", "tomyheart") 
 
   if(hardRedirect) {
@@ -72,6 +74,7 @@ function App() {
         <Routes>
           <Route element={<HomePage />} path='/' />
           <Route element={<GamePage />} path='/play' />
+          <Route element={<ContactPage />} path='/contactus' />
           <Route element={<ToMyHeart />} path='/tomyheart' />
           {/* <Route element={<GamePageTest />} path='/test' /> */}
           <Route element={<AliasRouter />} path="*" />
