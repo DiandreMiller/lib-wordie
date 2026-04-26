@@ -13,7 +13,7 @@ import Fuse from "fuse.js";
 
 // Todo:
 
-// fix route paths, fuzzy js for routes and regex, seo: JSON, title, offline function, footer, 
+// seo: JSON, title, offline function, footer, 
 // beginner, medium, hard check out other word games...
 // Give clues 
 // Further goals:
