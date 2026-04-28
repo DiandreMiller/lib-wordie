@@ -21,7 +21,7 @@ import Fuse from "fuse.js";
 // finish redirect
 // stats after a week, month, year
 //add badges when you get 5, 10, 25, 50, 100 etc in a row
-// add friends..
+// add friends
 
 // Catch-all near routes
 function AliasRouter() {
